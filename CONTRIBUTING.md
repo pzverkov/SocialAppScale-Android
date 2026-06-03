@@ -32,6 +32,10 @@ Instrumentation tests need a device or emulator:
 ./gradlew connectedDebugAndroidTest
 ```
 
+## Continuous integration
+
+GitHub Actions runs the same gates (`lintDebug`, `testDebugUnitTest`, `koverVerify`, `assembleDebug`) on every pull request and on `main`. The workflows are path-filtered per variant, so a change touching only one project (or only docs) builds only what it affects. The shared catalog (`gradle/**`) triggers both. A green checkmark on the PR means the gates passed.
+
 ## Dependency versions
 
 Plugin and library versions live in the shared catalog at `gradle/libs.versions.toml` and apply to both variants. Bump them there, then confirm both variants still build and pass the gates.

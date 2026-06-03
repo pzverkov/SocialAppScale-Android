@@ -1,5 +1,8 @@
 # SocialApp
 
+[![SocialApp-basic](https://github.com/pzverkov/SocialAppScale-Android/actions/workflows/ci-basic.yml/badge.svg)](https://github.com/pzverkov/SocialAppScale-Android/actions/workflows/ci-basic.yml)
+[![SocialApp-scale](https://github.com/pzverkov/SocialAppScale-Android/actions/workflows/ci-scale.yml/badge.svg)](https://github.com/pzverkov/SocialAppScale-Android/actions/workflows/ci-scale.yml)
+
 A two-screen Android marketplace app, kept as two variants in one repository.
 
 | Variant | Role |
@@ -19,6 +22,8 @@ cd SocialApp-scale          # or SocialApp-basic
 ```
 
 Requirements: an Android SDK (`compileSdk 36`) and JDK 17. The Gradle daemon is pinned to a JDK 17 toolchain and auto-provisions it via the foojay resolver, so a matching `JAVA_HOME` is not required.
+
+The build cache, configuration cache, and parallel execution are on by default (`gradle.properties`), so repeat builds reuse task outputs and rebuild only what changed.
 
 A local mock API serves the item data:
 
