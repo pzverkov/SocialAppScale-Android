@@ -1,0 +1,100 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "title": "Vintage Camera Sony Alpha",
+      "description": "A beautiful vintage camera in excellent condition. Perfect for photography enthusiasts and collectors. Includes original leather case, strap, and two extra lenses. The camera has been professionally serviced and is in full working order. Minor cosmetic wear consistent with age, but all mechanical functions work perfectly.",
+      "price": 150.00,
+      "imageUrl": "https://picsum.photos/seed/camera1/400/400",
+      "location": "New York"
+    },
+    {
+      "id": 2,
+      "title": "Professional Mountain Bike",
+      "description": "Trek mountain bike, barely used - only 200km on the odometer. Great for trails and city commuting. Features include hydraulic disc brakes, 21-speed Shimano gears, and front suspension. Frame size is medium, suitable for riders 165-180cm tall.",
+      "price": 450.00,
+      "imageUrl": "https://picsum.photos/seed/bike2/400/400",
+      "location": "London"
+    },
+    {
+      "id": 3,
+      "title": "iPhone 13 Pro - 256GB",
+      "description": "iPhone 13 Pro in Sierra Blue, 256GB storage. Battery health at 89%. Comes with original box, charger, and unused earphones. Screen has always had a protector, no scratches. Minor wear on the stainless steel frame. Unlocked and works with any carrier.",
+      "price": 699.00,
+      "imageUrl": "https://picsum.photos/seed/iphone3/400/400",
+      "location": "Toronto"
+    },
+    {
+      "id": 4,
+      "title": "IKEA MALM Desk - White",
+      "description": "IKEA MALM desk in white finish. Dimensions: 140x65cm. Includes the pull-out panel for keyboard. Some minor scratches on the surface but in good overall condition. Easy to disassemble for transport. Buyer must arrange pickup.",
+      "price": 45.00,
+      "imageUrl": "https://picsum.photos/seed/desk4/400/400",
+      "location": "Berlin"
+    },
+    {
+      "id": 5,
+      "title": "PlayStation 5 + 2 Controllers",
+      "description": "PlayStation 5 disc edition with two DualSense controllers. Includes HDMI cable and power cord. Console is in perfect working condition with no issues. Selling because I switched to PC gaming. Can include Spider-Man: Miles Morales for extra $20.",
+      "price": 420.00,
+      "imageUrl": "https://picsum.photos/seed/ps5/400/400",
+      "location": "Sydney"
+    },
+    {
+      "id": 6,
+      "title": "Vintage Vinyl Record Collection",
+      "description": "Collection of 50+ vinyl records from the 70s and 80s. Includes albums from Pink Floyd, Led Zeppelin, The Beatles, and more. All records have been stored properly and are in VG+ to NM condition. Perfect for collectors or vinyl enthusiasts.",
+      "price": 280.00,
+      "imageUrl": "https://picsum.photos/seed/vinyl6/400/400",
+      "location": "Amsterdam"
+    },
+    {
+      "id": 7,
+      "title": "Electric Guitar - Fender Stratocaster",
+      "description": "Fender Stratocaster in sunburst finish. Made in Mexico, 2019 model. Comes with gig bag, strap, cable, and picks. Professionally set up with new strings. Perfect for beginners and intermediate players. Amazing tone and playability.",
+      "price": 550.00,
+      "imageUrl": "https://picsum.photos/seed/guitar7/400/400",
+      "location": "Austin"
+    },
+    {
+      "id": 8,
+      "title": "DJI Mavic Air 2 Drone",
+      "description": "DJI Mavic Air 2 with Fly More Combo. Includes 3 batteries, charging hub, ND filters, and carrying case. Only flown 5 times, like new condition. Registered with the aviation authority. 4K video, 48MP photos. Perfect for aerial photography beginners.",
+      "price": 780.00,
+      "imageUrl": "https://picsum.photos/seed/drone8/400/400",
+      "location": "Singapore"
+    },
+    {
+      "id": 9,
+      "title": "Leather Sofa - 3 Seater",
+      "description": "Italian leather sofa in cognac brown. Very comfortable and in excellent condition. Dimensions: 210cm wide x 90cm deep x 85cm high. No rips, tears, or stains. From a smoke-free and pet-free home. Buyer arranges transport.",
+      "price": 350.00,
+      "imageUrl": "https://picsum.photos/seed/sofa9/400/400",
+      "location": "Dublin"
+    },
+    {
+      "id": 10,
+      "title": "Nintendo Switch OLED + Games",
+      "description": "Nintendo Switch OLED model in white. Comes with dock, Joy-Cons, and original accessories. Games included: Zelda TOTK, Mario Kart 8, and Animal Crossing. All in original cases. Screen protector applied since day one.",
+      "price": 320.00,
+      "imageUrl": "https://picsum.photos/seed/switch10/400/400",
+      "location": "Chicago"
+    },
+    {
+      "id": 11,
+      "title": "Coffee Machine - Delonghi Magnifica",
+      "description": "Delonghi Magnifica automatic espresso machine. Makes excellent espresso, cappuccino, and latte. Recently descaled and cleaned. Includes milk frother attachment. Minor wear on the drip tray but functions perfectly.",
+      "price": 180.00,
+      "imageUrl": "https://picsum.photos/seed/coffee11/400/400",
+      "location": "Vancouver"
+    },
+    {
+      "id": 12,
+      "title": "Camping Tent - 4 Person",
+      "description": "Quechua 4-person camping tent. Used only twice, in excellent condition. Easy setup in under 2 minutes. Waterproof and breathable. Includes tent bag and stakes. Perfect for family camping trips.",
+      "price": 85.00,
+      "imageUrl": "https://picsum.photos/seed/tent12/400/400",
+      "location": "Tokyo"
+    }
+  ]
+}

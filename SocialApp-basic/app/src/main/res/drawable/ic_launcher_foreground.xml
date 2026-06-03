@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- SocialApp Launcher Icon -->
+    <!-- Marketplace identity: speech bubble + price tag -->
+    <!-- The design combines a chat bubble (buying/selling) with an "SA" monogram -->
+    
+    <!-- Main speech bubble / price tag shape -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,22
+            C36,22 24,34 24,50
+            C24,62 32,72 44,75
+            L44,86
+            L56,75
+            C72,73 84,62 84,50
+            C84,34 72,22 54,22
+            Z"/>
+    
+    <!-- "SA" monogram for SocialApp -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#13C1AC"
+        android:strokeWidth="5.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M49,47
+            C49,44 45,43 42.5,43
+            C38,43 36,45 36,48
+            C36,51 39,52 43,52.5
+            C47,53 50,54 50,57.5
+            C50,61 47,63 43,63
+            C39,63 36,62 35,59"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#13C1AC"
+        android:strokeWidth="5.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M55,64
+            L63,43
+            L71,64
+            M58.5,56
+            L67.5,56"/>
+
+</vector>

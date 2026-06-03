@@ -1,0 +1,12 @@
+{
+  "name": "socialapp-mock-server",
+  "version": "1.0.0",
+  "description": "Mock API server for SocialApp challenge",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

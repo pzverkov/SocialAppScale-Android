@@ -1,0 +1,23 @@
+# Workspace-level ignores for the SocialApp monorepo.
+# Each project (SocialApp-basic, SocialApp-scale) also has its own .gitignore;
+# these are workspace-level entries plus a defensive backstop.
+
+# OS / IDE
+.DS_Store
+.idea/
+*.iml
+
+# Claude Code local state (a shared .claude/settings.json, if added, stays tracked)
+.claude/settings.local.json
+
+# Tooling index (regenerated on demand)
+.code-review-graph/
+
+# Build outputs, caches, machine-local config, and signing material.
+# The shared catalog at gradle/libs.versions.toml is NOT a .gradle/ cache, so it stays tracked.
+**/build/
+**/.gradle/
+**/local.properties
+**/*.jks
+**/*.keystore
+**/keystore.properties
