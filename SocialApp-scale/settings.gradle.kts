@@ -1,4 +1,7 @@
 pluginManagement {
+    // Convention plugins (socialapp.android.*) live in a composite build so module
+    // build files apply shared config by id instead of repeating it.
+    includeBuild("build-logic")
     repositories {
         google()
         mavenCentral()
