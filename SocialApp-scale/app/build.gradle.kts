@@ -1,8 +1,7 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
+    id("socialapp.android.application")
     alias(libs.plugins.metro)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
@@ -55,10 +54,6 @@ kover {
     }
 }
 
-kotlin {
-    jvmToolchain(17)
-}
-
 // Release signing credentials are read from a gitignored keystore.properties,
 // falling back to environment variables for CI. Secrets never live in the repo.
 val keystorePropsFile = rootProject.file("keystore.properties")
@@ -71,12 +66,9 @@ val releaseStorePath = signingValue("storeFile", "KEYSTORE_FILE")
 
 android {
     namespace = "com.pzverkov.socialapp"
-    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.pzverkov.socialapp"
-        minSdk = 26
-        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
 
@@ -113,13 +105,7 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
     buildFeatures {
-        compose = true
         buildConfig = true
     }
 
