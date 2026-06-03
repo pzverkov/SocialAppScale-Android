@@ -1,116 +1,102 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+'use strict';
 
-const PORT = 3000;
+const http = require('node:http');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
 
-// Load mock data
-const dbPath = path.join(__dirname, '..', 'mock-api', 'db.json');
-let mockData = { items: [] };
+const HOST = process.env.HOST || '0.0.0.0';
+const PORT = Number(process.env.PORT) || 3000;
+// Per-request delay so the client exercises its loading and error states.
+// Set LATENCY_MS=0 to disable.
+const LATENCY_MS = Number(process.env.LATENCY_MS ?? 250);
 
-try {
-    const rawData = fs.readFileSync(dbPath, 'utf8');
-    mockData = JSON.parse(rawData);
-    console.log(`✅ Loaded ${mockData.items.length} items from db.json`);
-} catch (error) {
-    console.error('❌ Error loading db.json:', error.message);
-    console.log('Using empty items array');
+const DB_PATH = join(__dirname, '..', 'mock-api', 'db.json');
+
+function loadItems() {
+    try {
+        const parsed = JSON.parse(readFileSync(DB_PATH, 'utf8'));
+        return Array.isArray(parsed.items) ? parsed.items : [];
+    } catch (err) {
+        console.error(`[mock] cannot read ${DB_PATH}: ${err.message}`);
+        process.exit(1);
+    }
 }
 
-// Simple router
-const routes = {
-    'GET /items': () => ({
-        status: 200,
-        data: mockData.items
-    }),
-    'GET /items/': (id) => {
-        const item = mockData.items.find(i => i.id === parseInt(id));
-        if (item) {
-            return { status: 200, data: item };
-        }
-        return { status: 404, data: { error: 'Item not found' } };
-    }
-};
+const items = loadItems();
+const itemById = new Map(items.map((item) => [item.id, item]));
 
-// Create server
+function searchItems(query) {
+    const needle = (query.get('q') || '').trim().toLowerCase();
+    if (!needle) return items;
+    return items.filter((item) =>
+        [item.title, item.description, item.location].some((field) =>
+            String(field).toLowerCase().includes(needle),
+        ),
+    );
+}
+
+// [method, pattern, handler(captures, query) -> [status, body]]
+const routes = [
+    ['GET', /^\/items\/?$/, (_captures, query) => [200, searchItems(query)]],
+    ['GET', /^\/items\/(\d+)\/?$/, ([id]) => {
+        const item = itemById.get(Number(id));
+        return item ? [200, item] : [404, { error: 'item not found', id: Number(id) }];
+    }],
+    ['GET', /^\/(?:health\/?)?$/, () => [200, { status: 'ok', items: items.length }]],
+];
+
+function route(method, pathname, query) {
+    let pathMatchedWrongMethod = false;
+    for (const [routeMethod, pattern, handler] of routes) {
+        const match = pattern.exec(pathname);
+        if (!match) continue;
+        if (routeMethod !== method) {
+            pathMatchedWrongMethod = true;
+            continue;
+        }
+        return handler(match.slice(1), query);
+    }
+    if (pathMatchedWrongMethod) return [405, { error: 'method not allowed' }];
+    return [404, { error: 'not found', path: pathname }];
+}
+
 const server = http.createServer((req, res) => {
-    // Enable CORS
+    const startedAt = process.hrtime.bigint();
+    const { pathname, searchParams } = new URL(req.url, `http://${req.headers.host}`);
+
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
-    // Handle preflight
     if (req.method === 'OPTIONS') {
         res.writeHead(204);
         res.end();
         return;
     }
 
-    const url = req.url || '/';
-    const method = req.method || 'GET';
-    
-    console.log(`📥 ${method} ${url}`);
+    const [status, body] = route(req.method, pathname, searchParams);
 
-    // Add artificial delay to simulate network latency (300-800ms)
-    const delay = Math.floor(Math.random() * 500) + 300;
-    
-    setTimeout(() => {
-        let response = { status: 404, data: { error: 'Not found' } };
+    const respond = () => {
+        res.writeHead(status);
+        res.end(JSON.stringify(body));
+        const ms = Number(process.hrtime.bigint() - startedAt) / 1e6;
+        console.log(`[mock] ${req.method} ${pathname} ${status} ${ms.toFixed(0)}ms`);
+    };
 
-        // Match routes
-        if (url === '/items' || url === '/items/') {
-            response = routes['GET /items']();
-        } else if (url.startsWith('/items/')) {
-            const id = url.split('/items/')[1];
-            response = routes['GET /items/'](id);
-        } else if (url === '/' || url === '/health') {
-            response = { 
-                status: 200, 
-                data: { 
-                    status: 'ok', 
-                    message: 'SocialApp Mock Server',
-                    endpoints: [
-                        'GET /items - List all items',
-                        'GET /items/:id - Get item by ID',
-                        'GET /health - Health check'
-                    ]
-                } 
-            };
-        }
-
-        res.writeHead(response.status);
-        res.end(JSON.stringify(response.data, null, 2));
-        console.log(`📤 ${response.status} (${delay}ms delay)`);
-    }, delay);
+    if (LATENCY_MS > 0) setTimeout(respond, LATENCY_MS);
+    else respond();
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-    console.log('');
-    console.log('🚀 ================================');
-    console.log('   SocialApp Mock Server');
-    console.log('   ================================');
-    console.log('');
-    console.log('   For Android Emulator use:');
-    console.log(`   http://10.0.2.2:${PORT}/items`);
-    console.log('');
-    console.log('   For Physical Device use:');
-    console.log(`   http://<your-local-ip>:${PORT}/items`);
-    console.log('');
-    console.log('   Endpoints:');
-    console.log('   GET /items     - List all items');
-    console.log('   GET /items/:id - Get item by ID');
-    console.log('   GET /health    - Health check');
-    console.log('');
-    console.log('   Press Ctrl+C to stop');
-    console.log('');
+server.listen(PORT, HOST, () => {
+    console.log(`[mock] serving ${items.length} items on http://${HOST}:${PORT}`);
+    console.log(`[mock] android emulator base url: http://10.0.2.2:${PORT}`);
 });
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-    console.log('\n👋 Shutting down server...');
-    server.close(() => {
-        console.log('✅ Server stopped');
-        process.exit(0);
-    });
-});
+function shutdown(signal) {
+    console.log(`[mock] ${signal} received, stopping`);
+    server.close(() => process.exit(0));
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

@@ -93,10 +93,10 @@ cp keystore.properties.template keystore.properties   # then fill in the passwor
 
 CI can skip the file and export `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` instead. The release key is the app's identity for its lifetime; in a real deployment it belongs in a secret manager or hardware-backed store, not on a developer machine.
 
-A Node.js mock server under `mock-server/` serves the API locally:
+A dependency-free Node.js mock server under `mock-server/` serves the API locally (nothing to install):
 
 ```
-cd mock-server && npm install && npm start
+cd mock-server && node server.js
 ```
 
 Exercise a deep link against a running build:

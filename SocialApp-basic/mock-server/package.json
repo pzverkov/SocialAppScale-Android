@@ -1,12 +1,14 @@
 {
   "name": "socialapp-mock-server",
   "version": "1.0.0",
-  "description": "Mock API server for SocialApp challenge",
+  "private": true,
+  "description": "Local mock API that serves item data to the SocialApp client over HTTP.",
+  "type": "commonjs",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+  "engines": {
+    "node": ">=18"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "scripts": {
+    "start": "node server.js"
+  }
 }
