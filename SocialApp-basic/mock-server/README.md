@@ -1,84 +1,59 @@
-# Mock Server
+# Mock API server
 
-A simple Node.js mock server for the SocialApp challenge.
+A dependency-free Node.js server that serves item data to the SocialApp client over HTTP. It reads `../mock-api/db.json` and exposes a small read-only REST surface using only Node built-ins, so there is nothing to install.
 
-## Quick Start
+## Run
 
-```bash
-# Navigate to mock-server directory
-cd mock-server
-
-# Start the server (no npm install required - uses only Node.js built-ins)
+```
 node server.js
 ```
 
-You should see:
+From the Android emulator the client reaches it at `http://10.0.2.2:3000`, which is set as `BASE_URL` in `app/src/main/java/com/pzverkov/socialapp/core/network/NetworkModule.kt`.
 
-```
-🚀 ================================
-   SocialApp Mock Server
-   ================================
+### Configuration
 
-   Local:    http://localhost:3000
-   Network:  http://0.0.0.0:3000
+All optional, via environment variables:
 
-   For Android Emulator use:
-   http://10.0.2.2:3000/items
-```
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `PORT` | `3000` | Listen port. |
+| `HOST` | `0.0.0.0` | Bind address. `0.0.0.0` lets an emulator or a device on the LAN reach it. |
+| `LATENCY_MS` | `250` | Per-request delay to exercise loading and error states. Set `0` to disable. |
 
 ## Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Server info and available endpoints |
-| GET | `/items` | Get all items (12 items) |
-| GET | `/items/:id` | Get a specific item by ID |
-| GET | `/health` | Health check |
+| Method | Path | Description |
+| --- | --- | --- |
+| GET | `/items` | All items. Optional `?q=` filters by title, description, or location. |
+| GET | `/items/{id}` | One item by numeric id, otherwise `404`. |
+| GET | `/health` | Liveness check with the loaded item count. |
 
-## Usage with Android
+Responses are JSON. CORS is open and an `OPTIONS` preflight returns `204`. Unknown paths return `404`; a known path with the wrong method returns `405`.
 
-### For Emulator
-The Android emulator uses a special IP to access the host machine:
+### Examples
+
 ```
-http://10.0.2.2:3000/items
+curl http://localhost:3000/items
+curl "http://localhost:3000/items?q=camera"
+curl http://localhost:3000/items/1
 ```
-
-This is already configured in `NetworkHelper.kt`.
-
-### For Physical Device
-1. Find your computer's IP address (e.g., `192.168.1.100`)
-2. Update `BASE_URL` in `NetworkHelper.kt`:
-   ```kotlin
-   private const val BASE_URL = "http://192.168.1.100:3000"
-   ```
-3. Ensure your phone is on the same WiFi network
-
-## Sample Response
 
 ```json
-[
-  {
-    "id": 1,
-    "title": "Vintage Camera Sony Alpha",
-    "description": "A beautiful vintage camera...",
-    "price": 150.00,
-    "imageUrl": "https://picsum.photos/seed/camera1/400/400",
-    "location": "New York"
-  }
-]
+{
+  "id": 1,
+  "title": "...",
+  "description": "...",
+  "price": 150.0,
+  "imageUrl": "https://...",
+  "location": "..."
+}
 ```
 
-## Simulated Latency
+## Physical device
 
-The server adds a random delay of 300-800ms to simulate real network conditions.
+The bind address is already `0.0.0.0`. Point the client at your machine's LAN IP by changing `BASE_URL` in `NetworkModule.kt` (for example `http://192.168.1.100:3000`) and keep the phone on the same network.
 
 ## Troubleshooting
 
-### "Connection refused" on emulator
-- Make sure the server is running (`node server.js`)
-- Verify you're using `10.0.2.2` not `localhost`
-- Check that port 3000 is not blocked by firewall
-
-### Server not starting
-- Make sure Node.js is installed: `node --version`
-- Check if port 3000 is in use: `lsof -i :3000`
+- Connection refused on the emulator: use `10.0.2.2`, not `localhost`, and confirm the server is running.
+- Port already in use: inspect with `lsof -i :3000`, or start on another port with `PORT=3001 node server.js`.
