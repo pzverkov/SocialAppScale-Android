@@ -1,0 +1,29 @@
+name: SocialApp-scale
+
+# Runs only when the scale project, the shared catalog, or these workflows change,
+# so docs-only and basic-only changes skip the scale build entirely.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SocialApp-scale/**'
+      - 'gradle/**'
+      - '.github/workflows/ci-scale.yml'
+      - '.github/workflows/verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'SocialApp-scale/**'
+      - 'gradle/**'
+      - '.github/workflows/ci-scale.yml'
+      - '.github/workflows/verify.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    uses: ./.github/workflows/verify.yml
+    with:
+      project: SocialApp-scale

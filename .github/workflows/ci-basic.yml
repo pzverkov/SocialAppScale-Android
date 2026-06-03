@@ -1,0 +1,29 @@
+name: SocialApp-basic
+
+# Runs only when the basic project, the shared catalog, or these workflows change,
+# so docs-only and scale-only changes skip the basic build entirely.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SocialApp-basic/**'
+      - 'gradle/**'
+      - '.github/workflows/ci-basic.yml'
+      - '.github/workflows/verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'SocialApp-basic/**'
+      - 'gradle/**'
+      - '.github/workflows/ci-basic.yml'
+      - '.github/workflows/verify.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    uses: ./.github/workflows/verify.yml
+    with:
+      project: SocialApp-basic
