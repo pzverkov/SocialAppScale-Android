@@ -2,13 +2,18 @@ package com.pzverkov.socialapp
 
 import com.pzverkov.socialapp.core.network.ErrorType
 import com.pzverkov.socialapp.core.network.NetworkResult
+import com.pzverkov.socialapp.feature.itemlist.data.ItemRepositoryImpl
 import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
 import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@Singleton
-class FakeItemRepositoryImpl @Inject constructor() : ItemRepository {
+@ContributesBinding(AppScope::class, replaces = [ItemRepositoryImpl::class])
+@SingleIn(AppScope::class)
+@Inject
+class FakeItemRepositoryImpl : ItemRepository {
 
     var itemsResult: NetworkResult<List<Item>> = NetworkResult.Success(defaultItems)
 

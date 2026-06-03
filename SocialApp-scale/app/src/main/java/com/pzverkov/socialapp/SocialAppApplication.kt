@@ -3,14 +3,13 @@ package com.pzverkov.socialapp
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import dagger.hilt.android.HiltAndroidApp
-import javax.inject.Inject
+import com.pzverkov.socialapp.core.di.AppGraph
+import com.pzverkov.socialapp.core.di.AppGraphContract
+import dev.zacsweers.metro.createGraphFactory
 
-@HiltAndroidApp
-class SocialAppApplication : Application(), ImageLoaderFactory {
+open class SocialAppApplication : Application(), ImageLoaderFactory {
 
-    @Inject
-    lateinit var imageLoader: ImageLoader
+    open val graph: AppGraphContract by lazy { createGraphFactory<AppGraph.Factory>().create(this) }
 
-    override fun newImageLoader(): ImageLoader = imageLoader
+    override fun newImageLoader(): ImageLoader = graph.imageLoader
 }

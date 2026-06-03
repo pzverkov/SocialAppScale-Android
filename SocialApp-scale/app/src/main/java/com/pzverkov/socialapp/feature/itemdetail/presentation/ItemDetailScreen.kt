@@ -49,8 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import com.pzverkov.socialapp.core.ui.components.ErrorState
 import com.pzverkov.socialapp.core.ui.components.ItemImage
 import com.pzverkov.socialapp.core.ui.components.LoadingIndicator
@@ -64,8 +64,10 @@ import com.pzverkov.socialapp.core.ui.theme.Dimens
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemDetailScreen(
+    itemId: Int,
     onNavigateBack: () -> Unit,
-    viewModel: ItemDetailViewModel = hiltViewModel(),
+    viewModel: ItemDetailViewModel =
+        assistedMetroViewModel<ItemDetailViewModel, ItemDetailViewModel.Factory> { create(itemId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }

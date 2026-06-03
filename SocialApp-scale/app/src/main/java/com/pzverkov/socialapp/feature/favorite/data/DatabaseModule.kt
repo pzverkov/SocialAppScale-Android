@@ -2,20 +2,17 @@ package com.pzverkov.socialapp.feature.favorite.data
 
 import android.content.Context
 import androidx.room.Room
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesTo
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 
-@Module
-@InstallIn(SingletonComponent::class)
-object DatabaseModule {
+@ContributesTo(AppScope::class)
+interface DatabaseProviders {
 
     @Provides
-    @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): SocialAppDatabase {
+    @SingleIn(AppScope::class)
+    fun provideDatabase(context: Context): SocialAppDatabase {
         return Room.databaseBuilder(
             context,
             SocialAppDatabase::class.java,

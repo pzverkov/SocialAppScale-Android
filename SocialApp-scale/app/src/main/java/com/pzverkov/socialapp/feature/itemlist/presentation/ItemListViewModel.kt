@@ -8,7 +8,10 @@ import com.pzverkov.socialapp.core.store.Store
 import com.pzverkov.socialapp.feature.favorite.domain.repository.FavoriteRepository
 import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
 import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -17,11 +20,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
-@HiltViewModel
-class ItemListViewModel @Inject constructor(
+@Inject
+@ViewModelKey(ItemListViewModel::class)
+@ContributesIntoMap(AppScope::class)
+class ItemListViewModel(
     private val itemRepository: ItemRepository,
     private val favoriteRepository: FavoriteRepository,
     private val shareLinkBuilder: ShareLinkBuilder,

@@ -3,7 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt)
+    alias(libs.plugins.metro)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kover)
@@ -14,26 +14,24 @@ kover {
         filters {
             excludes {
                 packages(
-                    "dagger.hilt.*",
-                    "hilt_aggregated_deps",
+                    "com.pzverkov.socialapp.core.di", // Metro graph + ViewModel factory wiring
                     "com.pzverkov.socialapp.core.ui.theme",
                     "com.pzverkov.socialapp.core.ui.components",
                     "com.pzverkov.socialapp.core.navigation",
                 )
                 classes(
-                    "*_Factory",
-                    "*_HiltModules*",
-                    "*Module_*",
-                    "*Hilt_*",
                     "*BuildConfig",
-                    "*_MembersInjector",
                     "*.MainActivity",
                     "*.SocialAppApplication",
                     "*.InstallationIdProviderImpl", // Requires Android Context, tested via instrumentation
+                    // Metro-generated DI plumbing (no hand-written logic to test).
+                    "*MetroFactory*",
+                    "*BindsMirror*",
+                    "*MetroContribution*",
                 )
                 annotatedBy(
-                    "dagger.Module",
-                    "dagger.internal.DaggerGenerated",
+                    "dev.zacsweers.metro.DependencyGraph", // graph declarations
+                    "dev.zacsweers.metro.ContributesTo", // @Provides container interfaces
                     "androidx.compose.runtime.Composable",
                 )
             }
@@ -82,7 +80,7 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        testInstrumentationRunner = "com.pzverkov.socialapp.HiltTestRunner"
+        testInstrumentationRunner = "com.pzverkov.socialapp.MetroTestRunner"
     }
 
     signingConfigs {
@@ -152,10 +150,8 @@ dependencies {
     // Navigation
     implementation(libs.androidx.navigation.compose)
 
-    // Hilt
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
+    // DI: Metro (compiler plugin auto-adds runtime) + AndroidX ViewModel integration
+    implementation(libs.metrox.viewmodel.compose)
 
     // Image loading
     implementation(libs.coil.compose)
@@ -187,8 +183,6 @@ dependencies {
     androidTestImplementation(composeBom)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    androidTestImplementation(libs.hilt.android.testing)
-    kspAndroidTest(libs.hilt.android.compiler)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.navigation.testing)

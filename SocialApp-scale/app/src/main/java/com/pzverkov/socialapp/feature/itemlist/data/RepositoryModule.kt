@@ -1,26 +1,17 @@
 package com.pzverkov.socialapp.feature.itemlist.data
 
-import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesTo
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 import retrofit2.Retrofit
-import javax.inject.Singleton
 
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
+@ContributesTo(AppScope::class)
+interface ItemDataProviders {
 
-    @Binds
-    abstract fun bindItemRepository(impl: ItemRepositoryImpl): ItemRepository
-
-    companion object {
-        @Provides
-        @Singleton
-        fun provideSocialAppApi(retrofit: Retrofit): SocialAppApi {
-            return retrofit.create(SocialAppApi::class.java)
-        }
+    @Provides
+    @SingleIn(AppScope::class)
+    fun provideSocialAppApi(retrofit: Retrofit): SocialAppApi {
+        return retrofit.create(SocialAppApi::class.java)
     }
 }

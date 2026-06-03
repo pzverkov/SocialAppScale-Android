@@ -1,6 +1,5 @@
 package com.pzverkov.socialapp.feature.itemdetail.presentation
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.pzverkov.socialapp.core.network.NetworkResult
 import com.pzverkov.socialapp.core.sharing.InstallationIdProvider
@@ -46,7 +45,7 @@ class ItemDetailViewModelTest {
 
     private fun createViewModel(itemId: Int = 1): ItemDetailViewModel {
         return ItemDetailViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("itemId" to itemId)),
+            itemId = itemId,
             itemRepository = fakeRepository,
             favoriteRepository = fakeFavoriteRepository,
             shareLinkBuilder = ShareLinkBuilder(fakeIdProvider),
