@@ -6,29 +6,17 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.pzverkov.socialapp.MainActivity
-import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import javax.inject.Inject
 
-@HiltAndroidTest
 class ItemDetailScreenTest {
 
-    @get:Rule(order = 0)
-    val hiltRule = HiltAndroidRule(this)
-
-    @get:Rule(order = 1)
+    @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
-
-    @Inject
-    lateinit var repository: ItemRepository
 
     @Before
     fun setup() {
-        hiltRule.inject()
         navigateToDetail()
     }
 

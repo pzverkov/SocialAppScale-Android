@@ -4,15 +4,19 @@ import com.pzverkov.socialapp.core.network.ErrorType
 import com.pzverkov.socialapp.core.network.NetworkResult
 import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
 import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-@Singleton
-class ItemRepositoryImpl @Inject constructor(
+@ContributesBinding(AppScope::class)
+@SingleIn(AppScope::class)
+@Inject
+class ItemRepositoryImpl(
     private val api: SocialAppApi,
 ) : ItemRepository {
 

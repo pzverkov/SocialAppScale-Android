@@ -75,8 +75,10 @@ fun SocialAppNavHost() {
                 navDeepLink { uriPattern = "socialapp://item/{itemId}" },
                 navDeepLink { uriPattern = "https://socialapp.app/item/{itemId}" },
             ),
-        ) {
+        ) { backStackEntry ->
+            val itemId = backStackEntry.arguments?.getInt("itemId") ?: 0
             ItemDetailScreen(
+                itemId = itemId,
                 onNavigateBack = { navController.popBackStack() },
             )
         }

@@ -1,22 +1,21 @@
 package com.pzverkov.socialapp.core.sharing
 
 import android.content.Context
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 
 interface InstallationIdProvider {
     fun get(): String
 }
 
-@Singleton
-class InstallationIdProviderImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+@ContributesBinding(AppScope::class)
+@SingleIn(AppScope::class)
+@Inject
+class InstallationIdProviderImpl(
+    private val context: Context,
 ) : InstallationIdProvider {
 
     private val prefs by lazy {
@@ -45,11 +44,4 @@ class InstallationIdProviderImpl @Inject constructor(
     companion object {
         private const val KEY = "installation_id"
     }
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class InstallationIdModule {
-    @Binds
-    abstract fun bind(impl: InstallationIdProviderImpl): InstallationIdProvider
 }

@@ -1,10 +1,12 @@
 package com.pzverkov.socialapp.core.sharing
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@Singleton
-class ShareLinkBuilder @Inject constructor(
+@SingleIn(AppScope::class)
+@Inject
+class ShareLinkBuilder(
     private val installationIdProvider: InstallationIdProvider,
 ) {
     fun buildDeepLink(itemId: Int): String {

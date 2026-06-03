@@ -1,13 +1,17 @@
 package com.pzverkov.socialapp.feature.favorite.data
 
 import com.pzverkov.socialapp.feature.favorite.domain.repository.FavoriteRepository
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class FavoriteRepositoryImpl @Inject constructor(
+@ContributesBinding(AppScope::class)
+@SingleIn(AppScope::class)
+@Inject
+class FavoriteRepositoryImpl(
     private val dao: FavoriteDao,
 ) : FavoriteRepository {
 

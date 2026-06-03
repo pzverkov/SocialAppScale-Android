@@ -64,8 +64,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import com.pzverkov.socialapp.R
 import com.pzverkov.socialapp.core.ui.components.EmptyState
 import com.pzverkov.socialapp.core.ui.components.ErrorState
@@ -102,7 +102,7 @@ private val ScreenGradient = Brush.verticalGradient(
 @Composable
 fun ItemListScreen(
     onNavigateToDetail: (Int) -> Unit,
-    viewModel: ItemListViewModel = hiltViewModel(),
+    viewModel: ItemListViewModel = metroViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
