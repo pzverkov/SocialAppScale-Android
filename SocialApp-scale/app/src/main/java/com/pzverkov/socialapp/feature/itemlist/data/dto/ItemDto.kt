@@ -1,6 +1,6 @@
 package com.pzverkov.socialapp.feature.itemlist.data.dto
 
-import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
+import com.pzverkov.socialapp.core.model.Item
 import kotlinx.serialization.Serializable
 
 @Serializable

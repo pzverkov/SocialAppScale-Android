@@ -1,8 +1,8 @@
 # SocialApp
 
-A two-screen marketplace client, structured as a single Gradle module that splits into many without a rewrite.
+A two-screen marketplace client, split into Gradle modules behind convention plugins, with dependency injection by Metro.
 
-**Status:** reference implementation. Single module, fully tested, release-signable with R8. Not wired to CI, and it carries a few deliberate dev-only settings documented under [Known gaps](#known-gaps-and-next-steps). Read "production-shaped," not "production-deployed."
+**Status:** reference implementation. Multi-module (`:core:*` extracted, `:feature:*` next), fully tested, release-signable with R8, and verified in CI. It carries a few deliberate dev-only settings documented under [Known gaps](#known-gaps-and-next-steps). Read "production-shaped," not "production-deployed."
 
 ## The architecture in one rule
 
@@ -10,47 +10,41 @@ Core knows nothing about features. Features never reach sideways.
 
 `core` owns the infrastructure - networking, the persistence store, sharing, the navigation host, the design system - and depends on no feature. Each `feature/*` owns one product surface, layers itself `presentation -> domain -> data`, and reaches only into `core` or its own layers.
 
-Most apps stay single-module until build times and ownership force a split, by which point dependencies point everywhere and the migration is expensive. Drawing the seam early costs nothing now and makes the later extraction mechanical: when a feature graduates to `:feature:itemlist`, its dependency edges already point the right way, so only the files move.
+Most apps stay single-module until build times and ownership force a split, by which point dependencies point everywhere and the migration is expensive. The seam was drawn early, so extraction is mechanical: the `:core:*` modules are now their own Gradle projects, and the package layout means a feature graduating to `:feature:itemlist` only moves files, since its dependency edges already point the right way.
 
 ## Layout
 
 ```
-app/src/main/java/com/pzverkov/socialapp
-  SocialAppApplication.kt        # Hilt application entry point
-  MainActivity.kt
+SocialApp-scale/
+  build-logic/                   # convention plugins: socialapp.android.*, socialapp.jvm.library
   core/
-    navigation/                  # SocialAppNavHost, typed routes, deep links
-    network/                     # Retrofit/OkHttp setup, NetworkResult
-    sharing/                     # ShareLinkBuilder, InstallationIdProvider
-    store/                       # persistence primitives
-    ui/                          # design system: theme, components, image loading
-  feature/
-    itemlist/
-      data/                      # SocialAppApi, ItemRepositoryImpl, DTOs
-      domain/                    # Item model, ItemRepository contract
-      presentation/              # ItemListScreen, ViewModel, UI models
-    itemdetail/
-      presentation/              # ItemDetailScreen, ViewModel, UI models
-    favorite/
-      data/                      # SocialAppDatabase (Room), DAO, repository
-      domain/                    # FavoriteRepository contract
+    model/      (:core:model)    # Item, ErrorType - pure Kotlin
+    common/     (:core:common)   # Store, PriceFormatter - pure Kotlin
+    network/    (:core:network)  # Retrofit/OkHttp setup, NetworkResult
+    ui/         (:core:ui)       # design system: theme, components, image loading
+    sharing/    (:core:sharing)  # ShareLinkBuilder, InstallationIdProvider
+  app/                           # Application, MainActivity, DI graph, navigation host
+    core/di, core/navigation     # graph aggregation + NavHost stay in :app
+    feature/
+      itemlist/                  # data (SocialAppApi, repo, DTOs), domain, presentation
+      itemdetail/                # presentation (assisted-injected ViewModel)
+      favorite/                  # data (Room), domain
 ```
 
-The packages already name the module graph they will become:
+The `:core:*` modules are extracted. Features still live in `:app`, with packages that name the modules they become next:
 
 ```
-:app
-  :core:network   :core:ui   :core:navigation   :core:store   :core:sharing
-  :feature:itemlist   :feature:itemdetail   :feature:favorite
+:app        ->  :feature:itemlist   :feature:itemdetail   :feature:favorite
+:feature:*  ->  :core:model  :core:common  :core:network  :core:ui  :core:sharing
 ```
 
-Each `:feature:*` depends on the `:core:*` modules it uses and exposes its public surface through `domain`. `:app` assembles the graph through Hilt. No feature imports another, so the split untangles nothing.
+Each `:feature:*` will depend on the `:core:*` modules it uses and expose its public surface through `domain`. `:app` assembles the Metro graph from `@Contributes*` declarations across modules. No feature imports another, so the split untangles nothing.
 
 ## Stack
 
 - Kotlin, JVM target 17, `compileSdk 36` / `minSdk 26` / `targetSdk 36`
 - Jetpack Compose + Material 3, Compose Navigation for routing and deep links
-- Hilt for dependency injection
+- Metro for dependency injection: compile-time graph, per-module `@Contributes*`
 - Retrofit + OkHttp + kotlinx.serialization for networking
 - Room for favorites
 - Coil for image loading
@@ -60,7 +54,7 @@ Each `:feature:*` depends on the `:core:*` modules it uses and exposes its publi
 
 **Deep links resolve to content, not the home screen.** A custom scheme `socialapp://item/{id}` and verified App Links on `https://socialapp.app/item/{id}` both land on the item. Shared links carry an 8-character installation id (`?ref=`) so sharing is attributable without collecting PII. App Links need an `assetlinks.json` on the domain in production; the custom scheme works at install time.
 
-**Hilt owns the object graph; tests swap bindings, not internals.** A view model never learns it is under test - the fake repository arrives through the binding the real one would.
+**Metro owns the object graph; tests swap bindings, not internals.** Modules contribute bindings with `@ContributesBinding`, and instrumentation replaces one with `replaces = [...]`. A view model never learns it is under test - the fake repository arrives through the binding the real one would.
 
 **Coverage is a floor the build enforces.** Kover fails below 65% line and 60% branch. Generated and UI-only code is excluded, so the number measures logic rather than Compose boilerplate. There are no screenshot or end-to-end tests yet.
 
@@ -110,9 +104,8 @@ adb shell am start -a android.intent.action.VIEW -d "socialapp://item/1"
 Named on purpose, roughly in priority order:
 
 - **Cleartext traffic is enabled** (`usesCleartextTraffic="true"`) to talk to the local mock server. Production needs this off and a `network-security-config` that pins or at least restricts to HTTPS.
-- **No CI.** The Gradle tasks above are the contract a pipeline would run: assemble, unit tests, `koverVerify`, lint, instrumentation tests, signed release.
 - **No crash reporting or observability.** `mapping.txt` retention is set up, but nothing consumes it yet. Wiring a reporter is a prerequisite for trusting a release.
-- **The module split is designed, not performed.** The seams are real and the version catalog already shares versions across modules; carving `build.gradle` per module is the next commit.
+- **Features are not yet their own modules.** The `:core:*` split is done; `itemlist`, `itemdetail`, and `favorite` still live in `:app` and move to `:feature:*` next, reusing the same convention plugins.
 
 ---
 

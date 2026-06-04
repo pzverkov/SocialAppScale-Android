@@ -33,3 +33,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "socialapp-scale"
 include(":app")
+include(":core:model")
+include(":core:common")
+include(":core:network")
+include(":core:ui")
+include(":core:sharing")

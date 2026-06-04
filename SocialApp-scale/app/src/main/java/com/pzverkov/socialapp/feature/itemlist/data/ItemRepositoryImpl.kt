@@ -1,8 +1,8 @@
 package com.pzverkov.socialapp.feature.itemlist.data
 
-import com.pzverkov.socialapp.core.network.ErrorType
+import com.pzverkov.socialapp.core.model.ErrorType
 import com.pzverkov.socialapp.core.network.NetworkResult
-import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
+import com.pzverkov.socialapp.core.model.Item
 import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding

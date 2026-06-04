@@ -1,4 +1,4 @@
-package com.pzverkov.socialapp.feature.itemlist.domain.model
+package com.pzverkov.socialapp.core.model
 
 data class Item(
     val id: Int,

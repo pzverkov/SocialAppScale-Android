@@ -1,6 +1,6 @@
 package com.pzverkov.socialapp.feature.itemlist.data
 
-import com.pzverkov.socialapp.core.network.ErrorType
+import com.pzverkov.socialapp.core.model.ErrorType
 import com.pzverkov.socialapp.core.network.NetworkResult
 import com.pzverkov.socialapp.feature.itemlist.data.dto.ItemDto
 import kotlinx.coroutines.test.runTest

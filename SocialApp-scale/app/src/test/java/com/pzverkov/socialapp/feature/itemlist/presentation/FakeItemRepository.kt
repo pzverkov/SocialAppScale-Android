@@ -1,13 +1,13 @@
 package com.pzverkov.socialapp.feature.itemlist.presentation
 
 import com.pzverkov.socialapp.core.network.NetworkResult
-import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
+import com.pzverkov.socialapp.core.model.Item
 import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
 
 class FakeItemRepository : ItemRepository {
 
     var itemsResult: NetworkResult<List<Item>> = NetworkResult.Success(emptyList())
-    var itemResult: NetworkResult<Item> = NetworkResult.Error(com.pzverkov.socialapp.core.network.ErrorType.UNKNOWN)
+    var itemResult: NetworkResult<Item> = NetworkResult.Error(com.pzverkov.socialapp.core.model.ErrorType.UNKNOWN)
 
     override suspend fun getItems(forceRefresh: Boolean): NetworkResult<List<Item>> = itemsResult
 
