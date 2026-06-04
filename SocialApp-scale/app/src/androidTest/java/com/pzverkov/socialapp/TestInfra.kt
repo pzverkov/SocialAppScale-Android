@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.test.runner.AndroidJUnitRunner
 import com.pzverkov.socialapp.core.di.AppGraphContract
-import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
+import com.pzverkov.socialapp.core.domain.ItemRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides

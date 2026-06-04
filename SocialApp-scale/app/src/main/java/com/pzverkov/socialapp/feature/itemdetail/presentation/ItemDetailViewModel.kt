@@ -2,12 +2,12 @@ package com.pzverkov.socialapp.feature.itemdetail.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pzverkov.socialapp.core.network.NetworkResult
+import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
 import com.pzverkov.socialapp.core.store.Store
-import com.pzverkov.socialapp.feature.favorite.domain.repository.FavoriteRepository
+import com.pzverkov.socialapp.core.domain.FavoriteRepository
 import com.pzverkov.socialapp.core.model.Item
-import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
+import com.pzverkov.socialapp.core.domain.ItemRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory

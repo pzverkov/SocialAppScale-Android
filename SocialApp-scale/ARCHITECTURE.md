@@ -60,8 +60,9 @@ The `:core:*` layers are Gradle modules behind convention plugins; features stil
 
 ```
 :core:model      # Item, ErrorType (pure Kotlin, no deps)
+:core:domain     # ItemRepository, FavoriteRepository, NetworkResult -> :core:model
 :core:common     # Store<State, Event>, PriceFormatter (pure Kotlin)
-:core:network    # OkHttp, Retrofit, NetworkResult -> :core:model
+:core:network    # OkHttp, Retrofit wiring
 :core:ui         # components, theme, image loading -> :core:model
 :core:sharing    # InstallationIdProvider, ShareLinkBuilder
 

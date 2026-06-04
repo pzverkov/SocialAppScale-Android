@@ -1,8 +1,8 @@
 package com.pzverkov.socialapp.feature.itemlist.presentation
 
-import com.pzverkov.socialapp.core.network.NetworkResult
+import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.model.Item
-import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
+import com.pzverkov.socialapp.core.domain.ItemRepository
 
 class FakeItemRepository : ItemRepository {
 

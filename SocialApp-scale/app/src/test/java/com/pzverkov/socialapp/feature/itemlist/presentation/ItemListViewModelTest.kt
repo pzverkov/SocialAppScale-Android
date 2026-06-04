@@ -1,7 +1,7 @@
 package com.pzverkov.socialapp.feature.itemlist.presentation
 
 import app.cash.turbine.test
-import com.pzverkov.socialapp.core.network.NetworkResult
+import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.sharing.InstallationIdProvider
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
 import com.pzverkov.socialapp.core.model.Item

@@ -1,6 +1,5 @@
-package com.pzverkov.socialapp.feature.itemlist.domain.repository
+package com.pzverkov.socialapp.core.domain
 
-import com.pzverkov.socialapp.core.network.NetworkResult
 import com.pzverkov.socialapp.core.model.Item
 
 interface ItemRepository {

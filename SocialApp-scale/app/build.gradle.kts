@@ -120,6 +120,7 @@ android {
 dependencies {
     // Modules
     implementation(project(":core:model"))
+    implementation(project(":core:domain"))
     implementation(project(":core:common"))
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
