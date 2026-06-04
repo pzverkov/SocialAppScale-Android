@@ -56,7 +56,7 @@ At a larger scale, the Store becomes the point where interceptors plug in (loggi
 
 ## Module Structure
 
-The `:core:*` layers are Gradle modules behind convention plugins; features still live in `:app`.
+The `:core:*` layers and `:feature:itemlist` are Gradle modules behind convention plugins; itemdetail and favorite still live in `:app`.
 
 ```
 :core:model      # Item, ErrorType (pure Kotlin, no deps)
@@ -65,20 +65,23 @@ The `:core:*` layers are Gradle modules behind convention plugins; features stil
 :core:network    # OkHttp, Retrofit wiring
 :core:ui         # components, theme, image loading -> :core:model
 :core:sharing    # InstallationIdProvider, ShareLinkBuilder
+:core:testing    # shared test doubles (fakes for the domain contracts) -> :core:domain
+
+:feature:itemlist  # SocialAppApi, ItemRepositoryImpl, DTO, list screen + ViewModel
+                   # -> :core:{model,domain,common,network,ui,sharing}
 
 :app
 └── com.pzverkov.socialapp/
     ├── core/di/           # Metro AppGraph, ViewModel factory
     ├── core/navigation/   # NavHost, routes, deep links
     ├── feature/
-    │   ├── itemlist/      # data (SocialAppApi, ItemRepositoryImpl, DTO), domain, presentation
     │   ├── itemdetail/    # presentation (assisted-injected ViewModel)
     │   └── favorite/      # data (Room DB, DAO, entity), domain
     ├── MainActivity.kt
     └── SocialAppApplication.kt
 ```
 
-`SocialAppApi` lives in `feature/itemlist/data`, not in `:core:network`. Core provides infrastructure (the Retrofit instance, the OkHttp client); features own their API interfaces. Core never imports feature code, which is what let the `:core:*` modules extract cleanly - features move to `:feature:*` next with no edge reversals.
+`SocialAppApi` lives in `:feature:itemlist`, not in `:core:network`. Core provides infrastructure (the Retrofit instance, the OkHttp client); features own their API interfaces. The repository contracts sit in `:core:domain`, so itemdetail (still in `:app`) reaches item data through the interface, not through `:feature:itemlist`. No feature imports another.
 
 ## Error Handling
 
@@ -136,7 +139,7 @@ The app registers both `socialapp://` (custom scheme, works immediately) and `ht
 
 ## At Scale
 
-- **`:feature:*` modules** to enforce compile-time API boundaries. The `:core:*` split is done; the features (`itemlist`, `itemdetail`, `favorite`) move next, reusing the convention plugins.
+- **Remaining `:feature:*` modules.** `:feature:itemlist` is extracted via the `socialapp.android.feature` convention; `itemdetail` and `favorite` move next the same way, with a navigation contract so `:app` wires routes without depending on each feature's internals.
 - **State persistence** for ephemeral list state (search query, filter, grid mode), which is currently lost on process death. At scale, the Store would persist and restore screen state automatically.
 - **Store interceptors** for logging, analytics event tracking, and test state recording.
 - **Snapshot testing** (Paparazzi) for visual regression across screen states.

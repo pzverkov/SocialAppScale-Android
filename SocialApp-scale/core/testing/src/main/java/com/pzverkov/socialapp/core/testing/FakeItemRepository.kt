@@ -1,4 +1,4 @@
-package com.pzverkov.socialapp.feature.itemlist.presentation
+package com.pzverkov.socialapp.core.testing
 
 import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.model.Item

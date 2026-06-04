@@ -5,4 +5,7 @@
     <string name="error_generic">Something went wrong</string>
     <string name="error_network">Please check your internet connection and try again</string>
     <string name="error_unknown">Something went wrong. Please try again</string>
+    <string name="share">Share</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
 </resources>

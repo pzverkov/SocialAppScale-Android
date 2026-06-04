@@ -58,6 +58,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.pzverkov.socialapp.R
+import com.pzverkov.socialapp.core.ui.R as UiR
 import com.pzverkov.socialapp.core.ui.theme.Accent
 import com.pzverkov.socialapp.core.ui.theme.Dimens
 
@@ -161,7 +162,7 @@ private fun ItemDetailContent(
                             contentColor = Color.White,
                         ),
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share))
+                        Icon(Icons.Default.Share, contentDescription = stringResource(UiR.string.share))
                     }
                     Spacer(modifier = Modifier.width(Dimens.SpacingSm))
                     FilledIconButton(
@@ -173,7 +174,7 @@ private fun ItemDetailContent(
                     ) {
                         Icon(
                             imageVector = if (item.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                            contentDescription = stringResource(if (item.isFavorite) R.string.remove_from_favorites else R.string.add_to_favorites),
+                            contentDescription = stringResource(if (item.isFavorite) UiR.string.remove_from_favorites else UiR.string.add_to_favorites),
                         )
                     }
                 }
