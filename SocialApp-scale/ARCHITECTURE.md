@@ -38,7 +38,7 @@ Data sources
 
 **Why UDF over MVP:** MVP requires manual view attachment/detachment, nullable view references, and explicit lifecycle management. UDF with StateFlow eliminates all three: state flows down as an immutable sealed interface, the ViewModel doesn't hold a reference to the view, and Compose handles lifecycle collection via `collectAsStateWithLifecycle`.
 
-**Hilt over manual DI or Dagger-Anvil:** Manual constructor injection is simpler for two screens, but doesn't scale to a third without wiring boilerplate. Hilt automates the component hierarchy and integrates with ViewModel, Navigation, and testing (`@TestInstallIn`) out of the box. Dagger-Anvil's value is in multi-module codebases where each module contributes bindings independently. For this scope, Hilt is the pragmatic middle ground.
+**Metro over Hilt for the modular variant:** Hilt cannot process annotations in feature modules (Google's own guidance is to drop to Dagger there), the exact wall a modular app hits. Metro is a compiler-plugin DI with compile-time graph validation and first-party per-module contributions (`@ContributesBinding`, `@ContributesIntoMap`): each module declares its own bindings and the app graph aggregates them across the build. The single-module `SocialApp-basic` stays on Hilt as the deliberate contrast - batteries-included DI is the right call until modularization makes its limits bite. ViewModels resolve through `metrox-viewmodel-compose`; the detail screen uses assisted injection for its `itemId`.
 
 **kotlinx.serialization over Gson:** Kotlin-native, no reflection at runtime, compile-time safety via `@Serializable`. Gson uses reflection which is slower and can't catch schema mismatches until runtime.
 
@@ -54,33 +54,30 @@ The `Store<State, Event>` wraps `MutableStateFlow` for screen state and `Mutable
 
 At a larger scale, the Store becomes the point where interceptors plug in (logging, analytics, test state recording) without modifying each ViewModel.
 
-## Package Structure
+## Module Structure
+
+The `:core:*` layers are Gradle modules behind convention plugins; features still live in `:app`.
 
 ```
-com.pzverkov.socialapp/
-├── core/
-│   ├── navigation/        # NavHost, routes, deeplinks
-│   ├── network/           # OkHttp, Retrofit, NetworkResult, ErrorType
-│   ├── sharing/           # InstallationIdProvider, ShareLinkBuilder
-│   ├── store/             # Store<State, Event>
-│   └── ui/
-│       ├── components/    # ItemImage, ErrorState, EmptyState, LoadingIndicator, Previews
-│       └── theme/         # Material You theme, colors, typography, Dimens
-├── feature/
-│   ├── itemlist/
-│   │   ├── data/          # SocialAppApi, ItemRepositoryImpl, RepositoryModule, DTO
-│   │   ├── domain/        # Item model, ItemRepository interface
-│   │   └── presentation/  # ViewModel, State/Event, UiModel, Screen
-│   ├── itemdetail/
-│   │   └── presentation/  # ViewModel, State/Event, UiModel, Screen
-│   └── favorite/
-│       ├── data/          # Room DB, DAO, entity, modules
-│       └── domain/        # FavoriteRepository interface
-├── MainActivity.kt
-└── SocialAppApplication.kt
+:core:model      # Item, ErrorType (pure Kotlin, no deps)
+:core:common     # Store<State, Event>, PriceFormatter (pure Kotlin)
+:core:network    # OkHttp, Retrofit, NetworkResult -> :core:model
+:core:ui         # components, theme, image loading -> :core:model
+:core:sharing    # InstallationIdProvider, ShareLinkBuilder
+
+:app
+└── com.pzverkov.socialapp/
+    ├── core/di/           # Metro AppGraph, ViewModel factory
+    ├── core/navigation/   # NavHost, routes, deep links
+    ├── feature/
+    │   ├── itemlist/      # data (SocialAppApi, ItemRepositoryImpl, DTO), domain, presentation
+    │   ├── itemdetail/    # presentation (assisted-injected ViewModel)
+    │   └── favorite/      # data (Room DB, DAO, entity), domain
+    ├── MainActivity.kt
+    └── SocialAppApplication.kt
 ```
 
-`SocialAppApi` lives in `feature/itemlist/data`, not in `core/network`. Core provides infrastructure (Retrofit instance, OkHttp client). Features own their API interfaces. This means core never imports feature code, which is the prerequisite for extracting features into Gradle modules.
+`SocialAppApi` lives in `feature/itemlist/data`, not in `:core:network`. Core provides infrastructure (the Retrofit instance, the OkHttp client); features own their API interfaces. Core never imports feature code, which is what let the `:core:*` modules extract cleanly - features move to `:feature:*` next with no edge reversals.
 
 ## Error Handling
 
@@ -94,7 +91,7 @@ The repository catches exceptions and returns a typed `ErrorType` enum (`NETWORK
 
 **Unit tests:** ViewModel state transitions (loading, loaded, error, empty, search, favorites, retry, grid toggle, share). Repository caching, force refresh, error types, CancellationException propagation. Store state updates and event buffering. DTO deserialization with hardcoded JSON matching the mock server format. ShareLinkBuilder URL format.
 
-**Instrumentation tests:** Full integration via Hilt with `@TestInstallIn` swapping the real repository. Item rendering, search interaction, favorite toggle, navigation, buy snackbar, deeplinks, back navigation.
+**Instrumentation tests:** Full integration via a Metro test graph that contributes a fake repository with `replaces = [...]`. Item rendering, search interaction, favorite toggle, navigation, buy snackbar, deeplinks, back navigation.
 
 **Coverage:** Kover with 65% line and 60% branch minimums. Why 65% and not higher: the codebase is Compose-heavy, and composable functions are excluded from unit test coverage (they're covered by instrumentation tests). 65% ensures business logic, repositories, ViewModels, and the Store are thoroughly tested without gaming the number with trivial UI assertions.
 
@@ -138,13 +135,12 @@ The app registers both `socialapp://` (custom scheme, works immediately) and `ht
 
 ## At Scale
 
-- **Gradle modules per feature** to enforce compile-time API boundaries. The package structure is designed for this migration.
-- **State persistence** via SavedStateHandle integration in the Store. Currently `itemId` is recovered via SavedStateHandle on the detail screen, but list state (search query, filter, grid mode) is ephemeral. At scale, the Store would persist and restore screen state automatically.
+- **`:feature:*` modules** to enforce compile-time API boundaries. The `:core:*` split is done; the features (`itemlist`, `itemdetail`, `favorite`) move next, reusing the convention plugins.
+- **State persistence** for ephemeral list state (search query, filter, grid mode), which is currently lost on process death. At scale, the Store would persist and restore screen state automatically.
 - **Store interceptors** for logging, analytics event tracking, and test state recording.
 - **Snapshot testing** (Paparazzi) for visual regression across screen states.
 - **Offline-first** with Room cache replacing the current in-memory `cachedItems` in `ItemRepositoryImpl`. The current cache is process-lifetime only with no invalidation beyond `forceRefresh`. At scale, Room with a sync timestamp provides persistence across app restarts and offline browsing.
 - **Baseline profiles** for startup and scroll optimization.
-- **Convention plugins** to enforce the feature module template across the team.
 
 ## Running the Project
 
@@ -154,8 +150,8 @@ See the [README](README.md#build-test-release) for build, test, and release comm
 
 **Adding a feature:**
 1. Create `feature/name/` with `data/` and `presentation/`
-2. Define the repository interface, implement it, add a Hilt `@Module`
-3. Build the ViewModel with `Store<State, Event>`, call repository directly
+2. Define the repository interface in `domain`, implement it in `data`, annotate the impl `@ContributesBinding(AppScope::class)`
+3. Build the ViewModel with `Store<State, Event>`, annotate it `@ContributesIntoMap(AppScope::class)` (assisted-injected if it takes a nav arg), call the repository directly
 4. Write the Composable, collect state with `collectAsStateWithLifecycle`
 5. Register the route in `Navigation.kt`
 6. Write ViewModel tests with a fake repository

@@ -16,5 +16,21 @@ gradlePlugin {
             id = "socialapp.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
         }
+        register("androidLibrary") {
+            id = "socialapp.android.library"
+            implementationClass = "AndroidLibraryConventionPlugin"
+        }
+        register("androidLibraryCompose") {
+            id = "socialapp.android.library.compose"
+            implementationClass = "AndroidLibraryComposeConventionPlugin"
+        }
+        register("jvmLibrary") {
+            id = "socialapp.jvm.library"
+            implementationClass = "JvmLibraryConventionPlugin"
+        }
+        register("metro") {
+            id = "socialapp.android.metro"
+            implementationClass = "MetroConventionPlugin"
+        }
     }
 }

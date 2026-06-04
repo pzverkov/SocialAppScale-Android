@@ -14,8 +14,6 @@ kover {
             excludes {
                 packages(
                     "com.pzverkov.socialapp.core.di", // Metro graph + ViewModel factory wiring
-                    "com.pzverkov.socialapp.core.ui.theme",
-                    "com.pzverkov.socialapp.core.ui.components",
                     "com.pzverkov.socialapp.core.navigation",
                 )
                 classes(
@@ -120,6 +118,18 @@ android {
 }
 
 dependencies {
+    // Modules
+    implementation(project(":core:model"))
+    implementation(project(":core:common"))
+    implementation(project(":core:network"))
+    implementation(project(":core:ui"))
+    implementation(project(":core:sharing"))
+
+    // Aggregate the extracted modules that carry their own tests into the app's
+    // coverage report, so the verification floor measures their code too.
+    kover(project(":core:common"))
+    kover(project(":core:sharing"))
+
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
@@ -142,11 +152,10 @@ dependencies {
     // Image loading
     implementation(libs.coil.compose)
 
-    // Networking
+    // Networking: Retrofit type is consumed by the item-list RepositoryModule;
+    // the OkHttp/serialization wiring now lives in :core:network.
     implementation(libs.retrofit)
-    implementation(libs.okhttp.logging.interceptor)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.retrofit.kotlinx.serialization)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

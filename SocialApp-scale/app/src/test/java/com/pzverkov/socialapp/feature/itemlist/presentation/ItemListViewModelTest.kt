@@ -4,7 +4,7 @@ import app.cash.turbine.test
 import com.pzverkov.socialapp.core.network.NetworkResult
 import com.pzverkov.socialapp.core.sharing.InstallationIdProvider
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
-import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
+import com.pzverkov.socialapp.core.model.Item
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -75,20 +75,20 @@ class ItemListViewModelTest {
 
     @Test
     fun `network error results in error state`() = runTest(testDispatcher) {
-        fakeRepository.itemsResult = NetworkResult.Error(com.pzverkov.socialapp.core.network.ErrorType.NETWORK)
+        fakeRepository.itemsResult = NetworkResult.Error(com.pzverkov.socialapp.core.model.ErrorType.NETWORK)
         val viewModel = createViewModel()
 
         viewModel.state.test {
             assertEquals(ItemListState.Loading, awaitItem())
             val error = awaitItem()
             assertTrue(error is ItemListState.Error)
-            assertEquals(com.pzverkov.socialapp.core.network.ErrorType.NETWORK, (error as ItemListState.Error).errorType)
+            assertEquals(com.pzverkov.socialapp.core.model.ErrorType.NETWORK, (error as ItemListState.Error).errorType)
         }
     }
 
     @Test
     fun `retry reloads items after error`() = runTest(testDispatcher) {
-        fakeRepository.itemsResult = NetworkResult.Error(com.pzverkov.socialapp.core.network.ErrorType.NETWORK)
+        fakeRepository.itemsResult = NetworkResult.Error(com.pzverkov.socialapp.core.model.ErrorType.NETWORK)
         val viewModel = createViewModel()
 
         viewModel.state.test {

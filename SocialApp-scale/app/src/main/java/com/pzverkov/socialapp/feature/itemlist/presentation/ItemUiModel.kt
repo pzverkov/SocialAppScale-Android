@@ -2,7 +2,7 @@ package com.pzverkov.socialapp.feature.itemlist.presentation
 
 import androidx.compose.runtime.Immutable
 import com.pzverkov.socialapp.core.format.formatPrice
-import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
+import com.pzverkov.socialapp.core.model.Item
 
 @Immutable
 data class ItemUiModel(

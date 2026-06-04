@@ -4,7 +4,7 @@ import app.cash.turbine.test
 import com.pzverkov.socialapp.core.network.NetworkResult
 import com.pzverkov.socialapp.core.sharing.InstallationIdProvider
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
-import com.pzverkov.socialapp.feature.itemlist.domain.model.Item
+import com.pzverkov.socialapp.core.model.Item
 import com.pzverkov.socialapp.feature.itemlist.presentation.FakeFavoriteRepository
 import com.pzverkov.socialapp.feature.itemlist.presentation.FakeItemRepository
 import kotlinx.coroutines.Dispatchers
@@ -68,7 +68,7 @@ class ItemDetailViewModelTest {
     @Test
     fun `item not found results in error state`() = runTest(testDispatcher) {
         fakeRepository.itemsResult = NetworkResult.Success(emptyList())
-        fakeRepository.itemResult = NetworkResult.Error(com.pzverkov.socialapp.core.network.ErrorType.UNKNOWN)
+        fakeRepository.itemResult = NetworkResult.Error(com.pzverkov.socialapp.core.model.ErrorType.UNKNOWN)
         val viewModel = createViewModel(itemId = 999)
 
         viewModel.state.test {
@@ -122,7 +122,7 @@ class ItemDetailViewModelTest {
     @Test
     fun `retry reloads item after error`() = runTest(testDispatcher) {
         fakeRepository.itemsResult = NetworkResult.Success(emptyList())
-        fakeRepository.itemResult = NetworkResult.Error(com.pzverkov.socialapp.core.network.ErrorType.UNKNOWN)
+        fakeRepository.itemResult = NetworkResult.Error(com.pzverkov.socialapp.core.model.ErrorType.UNKNOWN)
         val viewModel = createViewModel(itemId = 1)
 
         viewModel.state.test {
@@ -136,7 +136,7 @@ class ItemDetailViewModelTest {
 
     @Test
     fun `share and buy do nothing when not loaded`() = runTest(testDispatcher) {
-        fakeRepository.itemsResult = NetworkResult.Error(com.pzverkov.socialapp.core.network.ErrorType.UNKNOWN)
+        fakeRepository.itemsResult = NetworkResult.Error(com.pzverkov.socialapp.core.model.ErrorType.UNKNOWN)
         val viewModel = createViewModel(itemId = 1)
 
         viewModel.state.test { skipItems(2) }

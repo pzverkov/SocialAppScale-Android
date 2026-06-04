@@ -11,7 +11,7 @@ import com.pzverkov.socialapp.FakeItemRepositoryImpl
 import com.pzverkov.socialapp.MainActivity
 import com.pzverkov.socialapp.TestAppGraph
 import com.pzverkov.socialapp.TestApplication
-import com.pzverkov.socialapp.core.network.ErrorType
+import com.pzverkov.socialapp.core.model.ErrorType
 import com.pzverkov.socialapp.core.network.NetworkResult
 import org.junit.Rule
 import org.junit.Test

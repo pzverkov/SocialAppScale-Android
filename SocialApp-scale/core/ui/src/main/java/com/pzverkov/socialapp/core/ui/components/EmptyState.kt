@@ -10,15 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.pzverkov.socialapp.R
 
 @Composable
 fun EmptyState(
+    title: String,
+    subtitle: String,
     modifier: Modifier = Modifier,
-    title: String = stringResource(R.string.empty_title),
-    subtitle: String = stringResource(R.string.empty_subtitle),
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
