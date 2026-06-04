@@ -19,8 +19,9 @@ SocialApp-scale/
   build-logic/                   # convention plugins: socialapp.android.*, socialapp.jvm.library
   core/
     model/      (:core:model)    # Item, ErrorType - pure Kotlin
+    domain/     (:core:domain)   # repository contracts, NetworkResult - pure Kotlin
     common/     (:core:common)   # Store, PriceFormatter - pure Kotlin
-    network/    (:core:network)  # Retrofit/OkHttp setup, NetworkResult
+    network/    (:core:network)  # Retrofit/OkHttp setup
     ui/         (:core:ui)       # design system: theme, components, image loading
     sharing/    (:core:sharing)  # ShareLinkBuilder, InstallationIdProvider
   app/                           # Application, MainActivity, DI graph, navigation host
@@ -35,10 +36,10 @@ The `:core:*` modules are extracted. Features still live in `:app`, with package
 
 ```
 :app        ->  :feature:itemlist   :feature:itemdetail   :feature:favorite
-:feature:*  ->  :core:model  :core:common  :core:network  :core:ui  :core:sharing
+:feature:*  ->  :core:model  :core:domain  :core:common  :core:network  :core:ui  :core:sharing
 ```
 
-Each `:feature:*` will depend on the `:core:*` modules it uses and expose its public surface through `domain`. `:app` assembles the Metro graph from `@Contributes*` declarations across modules. No feature imports another, so the split untangles nothing.
+Each `:feature:*` will depend on the `:core:*` modules it uses. Repository contracts live in `:core:domain`, so a feature's view model can read another feature's data through the shared interface without importing that feature. `:app` assembles the Metro graph from `@Contributes*` declarations across modules. No feature imports another, so the split untangles nothing.
 
 ## Stack
 

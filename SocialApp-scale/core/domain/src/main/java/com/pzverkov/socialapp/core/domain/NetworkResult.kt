@@ -1,4 +1,4 @@
-package com.pzverkov.socialapp.core.network
+package com.pzverkov.socialapp.core.domain
 
 import com.pzverkov.socialapp.core.model.ErrorType
 

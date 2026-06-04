@@ -1,4 +1,4 @@
-package com.pzverkov.socialapp.feature.favorite.domain.repository
+package com.pzverkov.socialapp.core.domain
 
 import kotlinx.coroutines.flow.Flow
 

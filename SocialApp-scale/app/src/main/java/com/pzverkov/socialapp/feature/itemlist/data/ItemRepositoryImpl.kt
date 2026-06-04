@@ -1,9 +1,9 @@
 package com.pzverkov.socialapp.feature.itemlist.data
 
 import com.pzverkov.socialapp.core.model.ErrorType
-import com.pzverkov.socialapp.core.network.NetworkResult
+import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.model.Item
-import com.pzverkov.socialapp.feature.itemlist.domain.repository.ItemRepository
+import com.pzverkov.socialapp.core.domain.ItemRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject

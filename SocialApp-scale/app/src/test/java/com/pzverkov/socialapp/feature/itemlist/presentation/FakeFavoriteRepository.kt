@@ -1,6 +1,6 @@
 package com.pzverkov.socialapp.feature.itemlist.presentation
 
-import com.pzverkov.socialapp.feature.favorite.domain.repository.FavoriteRepository
+import com.pzverkov.socialapp.core.domain.FavoriteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

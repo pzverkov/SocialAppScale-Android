@@ -13,8 +13,6 @@ android {
 }
 
 dependencies {
-    api(project(":core:model"))
-
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.okhttp.logging.interceptor)

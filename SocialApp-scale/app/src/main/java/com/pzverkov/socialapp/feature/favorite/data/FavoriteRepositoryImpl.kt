@@ -1,6 +1,6 @@
 package com.pzverkov.socialapp.feature.favorite.data
 
-import com.pzverkov.socialapp.feature.favorite.domain.repository.FavoriteRepository
+import com.pzverkov.socialapp.core.domain.FavoriteRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
