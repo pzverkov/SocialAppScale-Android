@@ -4,7 +4,6 @@ plugins {
     id("socialapp.android.application")
     alias(libs.plugins.metro)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kover)
 }
 
@@ -125,11 +124,13 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
     implementation(project(":core:sharing"))
+    implementation(project(":feature:itemlist"))
 
     // Aggregate the extracted modules that carry their own tests into the app's
     // coverage report, so the verification floor measures their code too.
     kover(project(":core:common"))
     kover(project(":core:sharing"))
+    kover(project(":feature:itemlist"))
 
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)
@@ -153,11 +154,6 @@ dependencies {
     // Image loading
     implementation(libs.coil.compose)
 
-    // Networking: Retrofit type is consumed by the item-list RepositoryModule;
-    // the OkHttp/serialization wiring now lives in :core:network.
-    implementation(libs.retrofit)
-    implementation(libs.kotlinx.serialization.json)
-
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
@@ -171,6 +167,7 @@ dependencies {
     implementation(libs.material)
 
     // Unit testing
+    testImplementation(project(":core:testing"))
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)

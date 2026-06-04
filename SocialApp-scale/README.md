@@ -2,7 +2,7 @@
 
 A two-screen marketplace client, split into Gradle modules behind convention plugins, with dependency injection by Metro.
 
-**Status:** reference implementation. Multi-module (`:core:*` extracted, `:feature:*` next), fully tested, release-signable with R8, and verified in CI. It carries a few deliberate dev-only settings documented under [Known gaps](#known-gaps-and-next-steps). Read "production-shaped," not "production-deployed."
+**Status:** reference implementation. Multi-module (`:core:*` and `:feature:itemlist` extracted; itemdetail and favorite next), fully tested, release-signable with R8, and verified in CI. It carries a few deliberate dev-only settings documented under [Known gaps](#known-gaps-and-next-steps). Read "production-shaped," not "production-deployed."
 
 ## The architecture in one rule
 
@@ -10,7 +10,7 @@ Core knows nothing about features. Features never reach sideways.
 
 `core` owns the infrastructure - networking, the persistence store, sharing, the navigation host, the design system - and depends on no feature. Each `feature/*` owns one product surface, layers itself `presentation -> domain -> data`, and reaches only into `core` or its own layers.
 
-Most apps stay single-module until build times and ownership force a split, by which point dependencies point everywhere and the migration is expensive. The seam was drawn early, so extraction is mechanical: the `:core:*` modules are now their own Gradle projects, and the package layout means a feature graduating to `:feature:itemlist` only moves files, since its dependency edges already point the right way.
+Most apps stay single-module until build times and ownership force a split, by which point dependencies point everywhere and the migration is expensive. The seam was drawn early, so extraction is mechanical: the `:core:*` modules and `:feature:itemlist` are their own Gradle projects, and the remaining features move the same way - files relocate, edges already point right.
 
 ## Layout
 
@@ -24,22 +24,24 @@ SocialApp-scale/
     network/    (:core:network)  # Retrofit/OkHttp setup
     ui/         (:core:ui)       # design system: theme, components, image loading
     sharing/    (:core:sharing)  # ShareLinkBuilder, InstallationIdProvider
+    testing/    (:core:testing)  # shared test doubles (fakes for the contracts)
+  feature/
+    itemlist/   (:feature:itemlist)  # SocialAppApi, repo, DTOs, list screen + ViewModel
   app/                           # Application, MainActivity, DI graph, navigation host
     core/di, core/navigation     # graph aggregation + NavHost stay in :app
     feature/
-      itemlist/                  # data (SocialAppApi, repo, DTOs), domain, presentation
       itemdetail/                # presentation (assisted-injected ViewModel)
       favorite/                  # data (Room), domain
 ```
 
-The `:core:*` modules are extracted. Features still live in `:app`, with packages that name the modules they become next:
+`:feature:itemlist` is extracted via the `socialapp.android.feature` convention; itemdetail and favorite still live in `:app` and move next:
 
 ```
-:app        ->  :feature:itemlist   :feature:itemdetail   :feature:favorite
-:feature:*  ->  :core:model  :core:domain  :core:common  :core:network  :core:ui  :core:sharing
+:app              ->  :feature:itemlist   (itemdetail, favorite next)
+:feature:itemlist ->  :core:model  :core:domain  :core:common  :core:network  :core:ui  :core:sharing
 ```
 
-Each `:feature:*` will depend on the `:core:*` modules it uses. Repository contracts live in `:core:domain`, so a feature's view model can read another feature's data through the shared interface without importing that feature. `:app` assembles the Metro graph from `@Contributes*` declarations across modules. No feature imports another, so the split untangles nothing.
+Repository contracts live in `:core:domain`, so a feature's view model reads another feature's data through the shared interface without importing that feature. `:app` assembles the Metro graph from `@Contributes*` declarations across modules. No feature imports another, so the split untangles nothing.
 
 ## Stack
 
@@ -106,7 +108,7 @@ Named on purpose, roughly in priority order:
 
 - **Cleartext traffic is enabled** (`usesCleartextTraffic="true"`) to talk to the local mock server. Production needs this off and a `network-security-config` that pins or at least restricts to HTTPS.
 - **No crash reporting or observability.** `mapping.txt` retention is set up, but nothing consumes it yet. Wiring a reporter is a prerequisite for trusting a release.
-- **Features are not yet their own modules.** The `:core:*` split is done; `itemlist`, `itemdetail`, and `favorite` still live in `:app` and move to `:feature:*` next, reusing the same convention plugins.
+- **Not every feature is its own module yet.** `:feature:itemlist` is extracted; `itemdetail` and `favorite` still live in `:app` and move to `:feature:*` next, reusing the `socialapp.android.feature` convention.
 
 ---
 

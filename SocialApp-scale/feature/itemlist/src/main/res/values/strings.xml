@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_placeholder">Search SocialApp…</string>
+    <string name="clear_search">Clear search</string>
+    <string name="loading_items">Loading items…</string>
+    <string name="empty_title">No items found</string>
+    <string name="empty_subtitle">Check back later for new listings</string>
+    <string name="empty_favorites_title">No favorites yet</string>
+    <string name="empty_favorites_subtitle">Tap the heart on items you like</string>
+    <string name="search_empty_title">No results for \"%s\"</string>
+    <string name="search_empty_subtitle">Try a different search term</string>
+    <string name="filter_all">All</string>
+    <string name="filter_favorites">Favorites</string>
+    <string name="grid_view">Grid view</string>
+    <string name="list_view">List view</string>
+</resources>

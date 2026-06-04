@@ -66,7 +66,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import com.pzverkov.socialapp.R
+import com.pzverkov.socialapp.feature.itemlist.R
+import com.pzverkov.socialapp.core.ui.R as UiR
 import com.pzverkov.socialapp.core.ui.components.EmptyState
 import com.pzverkov.socialapp.core.ui.components.ErrorState
 import com.pzverkov.socialapp.core.ui.components.ItemImage
@@ -364,8 +365,8 @@ private fun ImageWithOverlays(
     onFavoriteClick: () -> Unit,
     onShareClick: () -> Unit,
 ) {
-    val addFavDesc = stringResource(R.string.add_to_favorites)
-    val removeFavDesc = stringResource(R.string.remove_from_favorites)
+    val addFavDesc = stringResource(UiR.string.add_to_favorites)
+    val removeFavDesc = stringResource(UiR.string.remove_from_favorites)
     val favoriteDesc = if (item.isFavorite) removeFavDesc else addFavDesc
 
     Box {
@@ -424,7 +425,7 @@ private fun ImageWithOverlays(
             IconButton(onClick = onShareClick, modifier = Modifier.size(48.dp)) {
                 Icon(
                     Icons.Default.Share,
-                    contentDescription = stringResource(R.string.share),
+                    contentDescription = stringResource(UiR.string.share),
                     tint = WhiteFaded,
                     modifier = Modifier.size(18.dp),
                 )

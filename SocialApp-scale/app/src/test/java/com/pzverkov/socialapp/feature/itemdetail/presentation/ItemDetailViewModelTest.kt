@@ -5,8 +5,8 @@ import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.sharing.InstallationIdProvider
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
 import com.pzverkov.socialapp.core.model.Item
-import com.pzverkov.socialapp.feature.itemlist.presentation.FakeFavoriteRepository
-import com.pzverkov.socialapp.feature.itemlist.presentation.FakeItemRepository
+import com.pzverkov.socialapp.core.testing.FakeFavoriteRepository
+import com.pzverkov.socialapp.core.testing.FakeItemRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher

@@ -28,6 +28,10 @@ gradlePlugin {
             id = "socialapp.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
         }
+        register("androidFeature") {
+            id = "socialapp.android.feature"
+            implementationClass = "AndroidFeatureConventionPlugin"
+        }
         register("metro") {
             id = "socialapp.android.metro"
             implementationClass = "MetroConventionPlugin"
