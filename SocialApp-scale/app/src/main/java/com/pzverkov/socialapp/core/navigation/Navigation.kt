@@ -9,21 +9,12 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.IntOffset
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import androidx.navigation.navDeepLink
-import com.pzverkov.socialapp.feature.itemdetail.presentation.ItemDetailScreen
-import com.pzverkov.socialapp.feature.itemlist.presentation.ItemListScreen
-
-object Routes {
-    const val ITEM_LIST = "items"
-    const val ITEM_DETAIL = "items/{itemId}"
-
-    fun itemDetail(itemId: Int) = "items/$itemId"
-}
+import com.pzverkov.socialapp.feature.itemdetail.navigation.itemDetailScreen
+import com.pzverkov.socialapp.feature.itemdetail.navigation.navigateToItemDetail
+import com.pzverkov.socialapp.feature.itemlist.navigation.ItemListRoute
+import com.pzverkov.socialapp.feature.itemlist.navigation.itemListScreen
 
 private const val DURATION = 280
 
@@ -35,7 +26,7 @@ fun SocialAppNavHost() {
 
     NavHost(
         navController = navController,
-        startDestination = Routes.ITEM_LIST,
+        startDestination = ItemListRoute,
         enterTransition = {
             scaleIn(
                 initialScale = 0.92f,
@@ -61,26 +52,11 @@ fun SocialAppNavHost() {
             ) + fadeOut(animationSpec = tween(DURATION / 2))
         },
     ) {
-        composable(Routes.ITEM_LIST) {
-            ItemListScreen(
-                onNavigateToDetail = { itemId ->
-                    navController.navigate(Routes.itemDetail(itemId))
-                },
-            )
-        }
-        composable(
-            route = Routes.ITEM_DETAIL,
-            arguments = listOf(navArgument("itemId") { type = NavType.IntType }),
-            deepLinks = listOf(
-                navDeepLink { uriPattern = "socialapp://item/{itemId}" },
-                navDeepLink { uriPattern = "https://socialapp.app/item/{itemId}" },
-            ),
-        ) { backStackEntry ->
-            val itemId = backStackEntry.arguments?.getInt("itemId") ?: 0
-            ItemDetailScreen(
-                itemId = itemId,
-                onNavigateBack = { navController.popBackStack() },
-            )
-        }
+        itemListScreen(
+            onNavigateToDetail = { itemId -> navController.navigateToItemDetail(itemId) },
+        )
+        itemDetailScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
     }
 }

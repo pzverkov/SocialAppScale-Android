@@ -27,6 +27,7 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             add("implementation", libs.findLibrary("androidx-compose-material-icons-extended").get())
             add("implementation", libs.findLibrary("androidx-lifecycle-viewmodel-compose").get())
             add("implementation", libs.findLibrary("androidx-lifecycle-runtime-compose").get())
+            add("implementation", libs.findLibrary("androidx-navigation-compose").get())
             add("implementation", libs.findLibrary("metrox-viewmodel-compose").get())
             add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
             add("debugImplementation", libs.findLibrary("androidx-compose-ui-tooling").get())
