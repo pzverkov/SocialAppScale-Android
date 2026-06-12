@@ -36,5 +36,9 @@ gradlePlugin {
             id = "socialapp.android.metro"
             implementationClass = "MetroConventionPlugin"
         }
+        register("moduleRules") {
+            id = "socialapp.module.rules"
+            implementationClass = "ModuleRulesConventionPlugin"
+        }
     }
 }

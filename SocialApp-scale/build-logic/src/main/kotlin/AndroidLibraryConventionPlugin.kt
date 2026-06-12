@@ -11,7 +11,11 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
  */
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
-        pluginManager.apply("com.android.library")
+        with(pluginManager) {
+            apply("com.android.library")
+            apply("org.jetbrains.kotlinx.kover")
+            apply("socialapp.module.rules")
+        }
 
         extensions.configure<LibraryExtension> {
             compileSdk = 36

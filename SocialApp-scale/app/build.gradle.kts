@@ -3,7 +3,6 @@ import java.util.Properties
 plugins {
     id("socialapp.android.application")
     alias(libs.plugins.metro)
-    alias(libs.plugins.kover)
 }
 
 kover {
@@ -13,6 +12,7 @@ kover {
                 packages(
                     "com.pzverkov.socialapp.core.di", // Metro graph + ViewModel factory wiring
                     "com.pzverkov.socialapp.core.navigation",
+                    "com.pzverkov.socialapp.core.ui.theme", // Compose design tokens, covered by instrumentation
                 )
                 classes(
                     "*BuildConfig",
@@ -23,6 +23,7 @@ kover {
                     "*MetroFactory*",
                     "*BindsMirror*",
                     "*MetroContribution*",
+                    "*_Impl", // Room-generated DAO/database implementations
                 )
                 annotatedBy(
                     "dev.zacsweers.metro.DependencyGraph", // graph declarations
@@ -126,12 +127,13 @@ dependencies {
     implementation(project(":feature:itemlist"))
     implementation(project(":feature:favorite"))
 
-    // Aggregate the extracted modules that carry their own tests into the app's
-    // coverage report, so the verification floor measures their code too.
-    kover(project(":core:common"))
-    kover(project(":core:sharing"))
-    kover(project(":feature:itemlist"))
-    kover(project(":feature:favorite"))
+    // Aggregate every other module into the app's coverage report so the verification
+    // floor measures their code too. Reading subproject paths and declaring a dependency
+    // by path holds no cross-project state, so this stays config-cache safe. :core:testing
+    // is test-only scaffolding and is left out of the denominator.
+    rootProject.subprojects
+        .filter { it.buildFile.exists() && it.path != project.path && it.path != ":core:testing" }
+        .forEach { add("kover", project(it.path)) }
 
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)
