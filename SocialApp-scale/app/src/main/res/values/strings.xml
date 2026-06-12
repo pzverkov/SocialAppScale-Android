@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SocialApp</string>
-
-    <!-- Common -->
-    <string name="back">Back</string>
-
-    <!-- Item detail -->
-    <string name="description_label">Description</string>
-    <string name="buy_now">Buy Now</string>
-    <string name="view_profile">View profile</string>
-    <string name="purchase_coming_soon">Purchase flow for %s coming soon!</string>
 </resources>

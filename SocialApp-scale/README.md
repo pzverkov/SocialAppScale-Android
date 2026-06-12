@@ -2,7 +2,7 @@
 
 A two-screen marketplace client, split into Gradle modules behind convention plugins, with dependency injection by Metro.
 
-**Status:** reference implementation. Multi-module (`:core:*` and `:feature:itemlist` extracted; itemdetail and favorite next), fully tested, release-signable with R8, and verified in CI. It carries a few deliberate dev-only settings documented under [Known gaps](#known-gaps-and-next-steps). Read "production-shaped," not "production-deployed."
+**Status:** reference implementation. Multi-module (`:core:*` plus a `:feature:*` module per feature), fully tested, release-signable with R8, and verified in CI. It carries a few deliberate dev-only settings documented under [Known gaps](#known-gaps-and-next-steps). Read "production-shaped," not "production-deployed."
 
 ## The architecture in one rule
 
@@ -10,7 +10,7 @@ Core knows nothing about features. Features never reach sideways.
 
 `core` owns the infrastructure - networking, the persistence store, sharing, the navigation host, the design system - and depends on no feature. Each `feature/*` owns one product surface, layers itself `presentation -> domain -> data`, and reaches only into `core` or its own layers.
 
-Most apps stay single-module until build times and ownership force a split, by which point dependencies point everywhere and the migration is expensive. The seam was drawn early, so extraction is mechanical: the `:core:*` modules and `:feature:itemlist` are their own Gradle projects, and the remaining features move the same way - files relocate, edges already point right.
+Most apps stay single-module until build times and ownership force a split, by which point dependencies point everywhere and the migration is expensive. The seam was drawn early, so extraction was mechanical: the `:core:*` modules and every feature are their own Gradle projects, and `:app` is left as a thin composition root - files relocated, edges already pointed right.
 
 ## Layout
 
@@ -24,22 +24,26 @@ SocialApp-scale/
     network/    (:core:network)  # Retrofit/OkHttp setup
     ui/         (:core:ui)       # design system: theme, components, image loading
     sharing/    (:core:sharing)  # ShareLinkBuilder, InstallationIdProvider
+    navigation/ (:core:navigation)  # shared deeplink scheme/host constants - pure Kotlin
     testing/    (:core:testing)  # shared test doubles (fakes for the contracts)
   feature/
-    itemlist/   (:feature:itemlist)  # SocialAppApi, repo, DTOs, list screen + ViewModel
+    itemlist/   (:feature:itemlist)    # SocialAppApi, repo, DTOs, list screen + ViewModel, nav contract
+    itemdetail/ (:feature:itemdetail)  # detail screen + assisted-injected ViewModel, nav contract
+    favorite/   (:feature:favorite)    # data only (Room), no UI
   app/                           # Application, MainActivity, DI graph, navigation host
     core/di, core/navigation     # graph aggregation + NavHost stay in :app
-    feature/
-      itemdetail/                # presentation (assisted-injected ViewModel)
-      favorite/                  # data (Room), domain
 ```
 
-`:feature:itemlist` is extracted via the `socialapp.android.feature` convention; itemdetail and favorite still live in `:app` and move next:
+Every feature is its own module behind the `socialapp.android.feature` convention (favorite, being data-only, uses the plain library convention). `:app` is a thin composition root - it depends on each feature to aggregate their `@Contributes*` declarations and nav contracts, but holds no feature code:
 
 ```
-:app              ->  :feature:itemlist   (itemdetail, favorite next)
-:feature:itemlist ->  :core:model  :core:domain  :core:common  :core:network  :core:ui  :core:sharing
+:app                ->  :feature:itemlist  :feature:itemdetail  :feature:favorite
+:feature:itemlist   ->  :core:model  :core:domain  :core:common  :core:network  :core:ui  :core:sharing
+:feature:itemdetail ->  :core:model  :core:domain  :core:common  :core:ui  :core:sharing  :core:navigation
+:feature:favorite   ->  :core:domain
 ```
+
+A build-logic rule (`socialapp.module.rules`) fails the build if a feature depends on another feature or a core module depends on a feature.
 
 Repository contracts live in `:core:domain`, so a feature's view model reads another feature's data through the shared interface without importing that feature. `:app` assembles the Metro graph from `@Contributes*` declarations across modules. No feature imports another, so the split untangles nothing.
 

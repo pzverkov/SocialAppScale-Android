@@ -89,18 +89,7 @@
             column="10"/>
     </issue>
 
-    <issue
-        id="LocalContextGetResourceValueCall"
-        message="Querying resource values using LocalContext.current"
-        errorLine1="                    val msg = context.getString(R.string.purchase_coming_soon, event.itemTitle)"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/pzverkov/socialapp/feature/itemdetail/presentation/ItemDetailScreen.kt"
-            line="85"
-            column="31"/>
-    </issue>
-
-    <issue
+<issue
         id="DiscouragedApi"
         message="Fixed screen orientations will be ignored in most cases, starting from Android 16. Android is moving toward a model where apps are expected to adapt to various orientations, display sizes, and aspect ratios."
         errorLine1="            android:screenOrientation=&quot;portrait&quot;"
@@ -160,17 +149,6 @@
             file="src/main/java/com/pzverkov/socialapp/core/sharing/InstallationIdProvider.kt"
             line="39"
             column="13"/>
-    </issue>
-
-    <issue
-        id="UseKtx"
-        message="Use the KTX extension function `String.toUri` instead?"
-        errorLine1="                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(&quot;geo:0,0?q=${Uri.encode(item.location)}&quot;))"
-        errorLine2="                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/pzverkov/socialapp/feature/itemdetail/presentation/ItemDetailScreen.kt"
-            line="203"
-            column="65"/>
     </issue>
 
 </issues>

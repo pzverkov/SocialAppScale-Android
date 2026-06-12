@@ -13,6 +13,9 @@ kover {
                     "com.pzverkov.socialapp.core.di", // Metro graph + ViewModel factory wiring
                     "com.pzverkov.socialapp.core.navigation",
                     "com.pzverkov.socialapp.core.ui.theme", // Compose design tokens, covered by instrumentation
+                    // Per-feature nav graph wiring, covered by instrumentation (deeplink + navigation tests).
+                    "com.pzverkov.socialapp.feature.itemlist.navigation",
+                    "com.pzverkov.socialapp.feature.itemdetail.navigation",
                 )
                 classes(
                     "*BuildConfig",
@@ -125,6 +128,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:sharing"))
     implementation(project(":feature:itemlist"))
+    implementation(project(":feature:itemdetail"))
     implementation(project(":feature:favorite"))
 
     // Aggregate every other module into the app's coverage report so the verification
