@@ -3,7 +3,6 @@ import java.util.Properties
 plugins {
     id("socialapp.android.application")
     alias(libs.plugins.metro)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.kover)
 }
 
@@ -125,12 +124,14 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:sharing"))
     implementation(project(":feature:itemlist"))
+    implementation(project(":feature:favorite"))
 
     // Aggregate the extracted modules that carry their own tests into the app's
     // coverage report, so the verification floor measures their code too.
     kover(project(":core:common"))
     kover(project(":core:sharing"))
     kover(project(":feature:itemlist"))
+    kover(project(":feature:favorite"))
 
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)
@@ -156,11 +157,6 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
 
     // Core Android
     implementation(libs.androidx.core.ktx)
