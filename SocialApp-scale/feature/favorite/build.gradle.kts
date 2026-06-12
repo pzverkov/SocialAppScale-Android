@@ -2,7 +2,6 @@ plugins {
     id("socialapp.android.library")
     id("socialapp.android.metro")
     alias(libs.plugins.ksp)
-    alias(libs.plugins.kover)
 }
 
 android {

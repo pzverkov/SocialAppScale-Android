@@ -1,7 +1,6 @@
 plugins {
     id("socialapp.android.feature")
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kover)
 }
 
 android {

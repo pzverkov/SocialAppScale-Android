@@ -1,6 +1,5 @@
 plugins {
     id("socialapp.jvm.library")
-    alias(libs.plugins.kover)
 }
 
 dependencies {
