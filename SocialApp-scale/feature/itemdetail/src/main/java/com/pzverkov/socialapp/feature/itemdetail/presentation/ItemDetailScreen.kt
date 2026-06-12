@@ -1,5 +1,6 @@
 package com.pzverkov.socialapp.feature.itemdetail.presentation
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -57,11 +58,14 @@ import com.pzverkov.socialapp.core.ui.components.LoadingIndicator
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import com.pzverkov.socialapp.R
+import com.pzverkov.socialapp.feature.itemdetail.R
 import com.pzverkov.socialapp.core.ui.R as UiR
 import com.pzverkov.socialapp.core.ui.theme.Accent
 import com.pzverkov.socialapp.core.ui.theme.Dimens
 
+// The purchase snackbar formats a string with the item title from a one-shot event, outside
+// composition, where stringResource is unavailable. context.getString is the correct call here.
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemDetailScreen(

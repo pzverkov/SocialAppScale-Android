@@ -56,7 +56,7 @@ At a larger scale, the Store becomes the point where interceptors plug in (loggi
 
 ## Module Structure
 
-The `:core:*` layers and `:feature:itemlist` are Gradle modules behind convention plugins; itemdetail and favorite still live in `:app`.
+The `:core:*` layers and every `:feature:*` are Gradle modules behind convention plugins. `:app` is a thin composition root: it owns the Metro graph, the `NavHost`, `MainActivity`, and the `Application`, and depends on each feature to aggregate their contributions, but contains no feature screen, ViewModel, or data code.
 
 ```
 :core:model      # Item, ErrorType (pure Kotlin, no deps)
@@ -65,23 +65,27 @@ The `:core:*` layers and `:feature:itemlist` are Gradle modules behind conventio
 :core:network    # OkHttp, Retrofit wiring
 :core:ui         # components, theme, image loading -> :core:model
 :core:sharing    # InstallationIdProvider, ShareLinkBuilder
+:core:navigation # shared deeplink scheme/host constants (pure Kotlin)
 :core:testing    # shared test doubles (fakes for the domain contracts) -> :core:domain
 
-:feature:itemlist  # SocialAppApi, ItemRepositoryImpl, DTO, list screen + ViewModel
-                   # -> :core:{model,domain,common,network,ui,sharing}
+:feature:itemlist    # SocialAppApi, ItemRepositoryImpl, DTO, list screen + ViewModel, nav contract
+                     # -> :core:{model,domain,common,network,ui,sharing}
+:feature:itemdetail  # detail screen + assisted-injected ViewModel, nav contract
+                     # -> :core:{model,domain,common,ui,sharing,navigation}
+:feature:favorite    # data only (Room DB, DAO, entity), pure library + Metro, no UI
+                     # -> :core:domain
 
 :app
 └── com.pzverkov.socialapp/
     ├── core/di/           # Metro AppGraph, ViewModel factory
-    ├── core/navigation/   # NavHost, routes, deep links
-    ├── feature/
-    │   ├── itemdetail/    # presentation (assisted-injected ViewModel)
-    │   └── favorite/      # data (Room DB, DAO, entity), domain
+    ├── core/navigation/   # NavHost composing the per-feature nav contracts
     ├── MainActivity.kt
     └── SocialAppApplication.kt
 ```
 
-`SocialAppApi` lives in `:feature:itemlist`, not in `:core:network`. Core provides infrastructure (the Retrofit instance, the OkHttp client); features own their API interfaces. The repository contracts sit in `:core:domain`, so itemdetail (still in `:app`) reaches item data through the interface, not through `:feature:itemlist`. No feature imports another.
+`SocialAppApi` lives in `:feature:itemlist`, not in `:core:network`. Core provides infrastructure (the Retrofit instance, the OkHttp client); features own their API interfaces. The repository contracts sit in `:core:domain`, so itemdetail reaches item data through the interface, not through `:feature:itemlist`. No feature imports another; a build-logic rule (`socialapp.module.rules`) fails configuration if one does, or if a core module depends on a feature.
+
+**Navigation contract.** Each screen-bearing feature exposes a type-safe `@Serializable` route, a `NavController.navigateToX()` helper, and a `NavGraphBuilder.xScreen(...)` extension that registers its composable and deeplinks. `:app`'s `NavHost` calls those extensions and wires the lambdas; it imports no screen composable and owns no route strings. Deeplinks stay as explicit URI patterns (built from the `:core:navigation` scheme/host constants) so they match the manifest intent filters exactly, while `toRoute()` rebuilds the route from the parsed arguments.
 
 ## Error Handling
 
@@ -139,7 +143,8 @@ The app registers both `socialapp://` (custom scheme, works immediately) and `ht
 
 ## At Scale
 
-- **Remaining `:feature:*` modules.** `:feature:itemlist` is extracted via the `socialapp.android.feature` convention; `itemdetail` and `favorite` move next the same way, with a navigation contract so `:app` wires routes without depending on each feature's internals.
+- **DI-aggregated navigation.** Features currently expose `NavGraphBuilder` extensions that `:app` calls explicitly. The next step contributes each feature's nav registration into a Metro multibinding (`@ContributesIntoSet`) so `:app` iterates the set and names no feature at all; deferred for now because wiring inter-feature navigation callbacks through a pure multibinding is awkward.
+- **`:feature:*:api` / `:impl` split** so `:app` depends only on the api/nav surface and feature implementations aggregate at runtime. Worth it once `:app` build times bite.
 - **State persistence** for ephemeral list state (search query, filter, grid mode), which is currently lost on process death. At scale, the Store would persist and restore screen state automatically.
 - **Store interceptors** for logging, analytics event tracking, and test state recording.
 - **Snapshot testing** (Paparazzi) for visual regression across screen states.
