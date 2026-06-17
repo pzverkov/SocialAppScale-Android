@@ -2,10 +2,11 @@ package com.pzverkov.socialapp.core.ui
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.BitmapImage
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
 
 /**
  * Loads [url] through the shared Coil image loader and returns a software [Bitmap], or null on
@@ -19,5 +20,5 @@ suspend fun loadBitmap(context: Context, url: String): Bitmap? {
         .allowHardware(false)
         .build()
     val result = context.imageLoader.execute(request) as? SuccessResult ?: return null
-    return (result.drawable as? BitmapDrawable)?.bitmap
+    return (result.image as? BitmapImage)?.bitmap
 }
