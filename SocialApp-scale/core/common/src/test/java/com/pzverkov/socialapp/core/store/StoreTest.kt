@@ -69,4 +69,30 @@ class StoreTest {
             assertEquals(3, awaitItem())
         }
     }
+
+    @Test
+    fun `interceptor sees state transitions and events`() {
+        val recorder = RecordingInterceptor()
+        val store = Store<Int, String>(0, interceptors = listOf(recorder))
+
+        store.updateState { 1 }
+        store.updateState { 1 } // no change, must not notify
+        store.emitEvent("go")
+
+        assertEquals(listOf(0 to 1), recorder.states)
+        assertEquals(listOf("go"), recorder.events)
+    }
+
+    private class RecordingInterceptor : StoreInterceptor {
+        val states = mutableListOf<Pair<Any?, Any?>>()
+        val events = mutableListOf<Any?>()
+
+        override fun onState(old: Any?, new: Any?) {
+            states += old to new
+        }
+
+        override fun onEvent(event: Any?) {
+            events += event
+        }
+    }
 }

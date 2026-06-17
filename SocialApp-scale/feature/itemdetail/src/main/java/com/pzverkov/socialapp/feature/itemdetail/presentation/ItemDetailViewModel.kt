@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
 import com.pzverkov.socialapp.core.store.Store
+import com.pzverkov.socialapp.core.store.StoreInterceptor
 import com.pzverkov.socialapp.core.domain.FavoriteRepository
 import com.pzverkov.socialapp.core.model.Item
 import com.pzverkov.socialapp.core.domain.ItemRepository
@@ -25,10 +26,12 @@ class ItemDetailViewModel(
     private val itemRepository: ItemRepository,
     private val favoriteRepository: FavoriteRepository,
     private val shareLinkBuilder: ShareLinkBuilder,
+    storeInterceptors: Set<@JvmSuppressWildcards StoreInterceptor> = emptySet(),
 ) : ViewModel() {
 
     private val store = Store<ItemDetailState, ItemDetailEvent>(
         initialState = ItemDetailState.Loading,
+        interceptors = storeInterceptors.toList(),
     )
 
     val state: StateFlow<ItemDetailState> = store.state

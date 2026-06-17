@@ -22,6 +22,7 @@ kover {
                     "*.MainActivity",
                     "*.SocialAppApplication",
                     "*.InstallationIdProviderImpl", // Requires Android Context, tested via instrumentation
+                    "*.LogcatCrashReporter", // Thin android.util.Log wrapper, not JVM-unit-testable
                     // Metro-generated DI plumbing (no hand-written logic to test).
                     "*MetroFactory*",
                     "*BindsMirror*",
@@ -127,6 +128,7 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
     implementation(project(":core:sharing"))
+    implementation(project(":core:observability"))
     implementation(project(":feature:itemlist"))
     implementation(project(":feature:itemdetail"))
     implementation(project(":feature:favorite"))
