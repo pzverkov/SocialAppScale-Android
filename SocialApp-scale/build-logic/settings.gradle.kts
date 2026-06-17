@@ -4,11 +4,12 @@ dependencyResolutionManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    // Same shared monorepo catalog the projects use, so convention plugins and app
-    // modules resolve every version from one place.
+    // SocialApp-scale's own catalog (../gradle), shared with the scale build so convention
+    // plugins resolve the same versions as the modules. The frozen SocialApp-basic keeps the
+    // monorepo-root catalog.
     versionCatalogs {
         create("libs") {
-            from(files("../../gradle/libs.versions.toml"))
+            from(files("../gradle/libs.versions.toml"))
         }
     }
 }
