@@ -23,6 +23,7 @@ kover {
                     "*.SocialAppApplication",
                     "*.InstallationIdProviderImpl", // Requires Android Context, tested via instrumentation
                     "*.LogcatCrashReporter", // Thin android.util.Log wrapper, not JVM-unit-testable
+                    "*.MlKitOnDeviceAiClient", // On-device Gemini Nano, requires AICore hardware
                     // Metro-generated DI plumbing (no hand-written logic to test).
                     "*MetroFactory*",
                     "*BindsMirror*",
@@ -129,6 +130,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:sharing"))
     implementation(project(":core:observability"))
+    implementation(project(":core:ai"))
     implementation(project(":feature:itemlist"))
     implementation(project(":feature:itemdetail"))
     implementation(project(":feature:favorite"))
