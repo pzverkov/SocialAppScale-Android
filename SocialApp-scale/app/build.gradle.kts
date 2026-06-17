@@ -24,6 +24,7 @@ kover {
                     "*.InstallationIdProviderImpl", // Requires Android Context, tested via instrumentation
                     "*.LogcatCrashReporter", // Thin android.util.Log wrapper, not JVM-unit-testable
                     "*.MlKitOnDeviceAiClient", // On-device Gemini Nano, requires AICore hardware
+                    "*.MlKitTranslator", // On-device ML Kit translation, requires downloaded models
                     // Metro-generated DI plumbing (no hand-written logic to test).
                     "*MetroFactory*",
                     "*BindsMirror*",
