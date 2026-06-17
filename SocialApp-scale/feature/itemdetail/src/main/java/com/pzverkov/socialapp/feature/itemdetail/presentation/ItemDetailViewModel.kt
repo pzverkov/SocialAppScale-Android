@@ -1,7 +1,12 @@
 package com.pzverkov.socialapp.feature.itemdetail.presentation
 
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pzverkov.socialapp.core.ai.AiAvailability
+import com.pzverkov.socialapp.core.ai.AiFeature
+import com.pzverkov.socialapp.core.ai.AiResult
+import com.pzverkov.socialapp.core.ai.OnDeviceAiClient
 import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
 import com.pzverkov.socialapp.core.store.Store
@@ -26,6 +31,7 @@ class ItemDetailViewModel(
     private val itemRepository: ItemRepository,
     private val favoriteRepository: FavoriteRepository,
     private val shareLinkBuilder: ShareLinkBuilder,
+    private val aiClient: OnDeviceAiClient,
     storeInterceptors: Set<@JvmSuppressWildcards StoreInterceptor> = emptySet(),
 ) : ViewModel() {
 
@@ -58,6 +64,7 @@ class ItemDetailViewModel(
                     store.updateState {
                         ItemDetailState.Loaded(result.data.toDetailUiModel(isFavorite))
                     }
+                    resolveAiCapabilities()
                 }
                 is NetworkResult.Error -> {
                     store.updateState { ItemDetailState.Error(result.type) }
@@ -66,17 +73,54 @@ class ItemDetailViewModel(
         }
     }
 
+    private fun resolveAiCapabilities() {
+        viewModelScope.launch {
+            val canSummarize = aiClient.availability(AiFeature.SUMMARIZATION) != AiAvailability.UNAVAILABLE
+            val canDescribe = aiClient.availability(AiFeature.IMAGE_DESCRIPTION) == AiAvailability.AVAILABLE
+            updateLoaded {
+                it.copy(
+                    summary = if (canSummarize) SummaryUiState.Available else SummaryUiState.Hidden,
+                    canDescribeImage = canDescribe,
+                )
+            }
+        }
+    }
+
     private fun observeFavorite() {
         viewModelScope.launch {
             favoriteRepository.observeFavoriteIds().collect { favoriteIds ->
                 val item = loadedItem ?: return@collect
-                val current = state.value
-                if (current is ItemDetailState.Loaded) {
-                    store.updateState {
-                        ItemDetailState.Loaded(item.toDetailUiModel(item.id in favoriteIds))
-                    }
-                }
+                updateLoaded { it.copy(item = item.toDetailUiModel(item.id in favoriteIds)) }
             }
+        }
+    }
+
+    /** AI summary requested by the user; only valid once the item is loaded. */
+    fun onSummarizeClicked() {
+        val item = (state.value as? ItemDetailState.Loaded)?.item ?: return
+        updateLoaded { it.copy(summary = SummaryUiState.Loading) }
+        viewModelScope.launch {
+            val summary = when (val result = aiClient.summarize(item.description)) {
+                is AiResult.Success -> SummaryUiState.Ready(result.value)
+                else -> SummaryUiState.Failed
+            }
+            updateLoaded { it.copy(summary = summary) }
+        }
+    }
+
+    /** Image bitmap supplied by the screen for on-device alt-text generation (a11y path). */
+    fun onImageLoaded(bitmap: Bitmap) {
+        viewModelScope.launch {
+            val result = aiClient.describeImage(bitmap)
+            if (result is AiResult.Success) {
+                updateLoaded { it.copy(imageContentDescription = result.value) }
+            }
+        }
+    }
+
+    private fun updateLoaded(transform: (ItemDetailState.Loaded) -> ItemDetailState.Loaded) {
+        store.updateState { current ->
+            if (current is ItemDetailState.Loaded) transform(current) else current
         }
     }
 
