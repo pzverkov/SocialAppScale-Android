@@ -140,12 +140,12 @@ dependencies {
     // Aggregate every other module into the app's coverage report so the verification
     // floor measures their code too. Reading subproject paths and declaring a dependency
     // by path holds no cross-project state, so this stays config-cache safe. :core:testing
-    // is test-only scaffolding and is left out of the denominator.
+    // is test-only scaffolding; :core:ui holds only the (coverage-excluded) Compose design
+    // system and runs Roborazzi under Robolectric, whose coverage data perturbs the aggregate
+    // filters - both stay out of the denominator.
+    val koverExcludedModules = setOf(":core:testing", ":baselineprofile", ":core:ui")
     rootProject.subprojects
-        .filter {
-            it.buildFile.exists() && it.path != project.path &&
-                it.path != ":core:testing" && it.path != ":baselineprofile"
-        }
+        .filter { it.buildFile.exists() && it.path != project.path && it.path !in koverExcludedModules }
         .forEach { add("kover", project(it.path)) }
 
     // Compose
