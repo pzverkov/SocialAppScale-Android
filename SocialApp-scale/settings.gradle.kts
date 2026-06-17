@@ -22,13 +22,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
-    // Plugin and dependency versions live in the shared monorepo catalog at the
-    // workspace root, so a bump applies to every project at once.
-    versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
-        }
-    }
+    // SocialApp-scale owns its version catalog at the conventional gradle/libs.versions.toml,
+    // which Gradle auto-registers as `libs`, so it modernizes independently of the frozen
+    // SocialApp-basic (which keeps using the pristine monorepo-root catalog).
 }
 
 rootProject.name = "socialapp-scale"
