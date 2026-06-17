@@ -143,7 +143,7 @@ dependencies {
     // is test-only scaffolding; :core:ui holds only the (coverage-excluded) Compose design
     // system and runs Roborazzi under Robolectric, whose coverage data perturbs the aggregate
     // filters - both stay out of the denominator.
-    val koverExcludedModules = setOf(":core:testing", ":baselineprofile", ":core:ui")
+    val koverExcludedModules = setOf(":core:testing", ":baselineprofile", ":core:ui", ":screenshot:itemdetail")
     rootProject.subprojects
         .filter { it.buildFile.exists() && it.path != project.path && it.path !in koverExcludedModules }
         .forEach { add("kover", project(it.path)) }
