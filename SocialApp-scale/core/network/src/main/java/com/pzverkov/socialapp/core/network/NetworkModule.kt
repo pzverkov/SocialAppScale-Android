@@ -1,6 +1,6 @@
 package com.pzverkov.socialapp.core.network
 
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides

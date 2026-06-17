@@ -18,7 +18,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
         }
 
         extensions.configure<LibraryExtension> {
-            compileSdk = 36
+            // compileSdk ahead of targetSdk so newer-API libraries (androidx.core 1.19+) compile.
+            compileSdk = 37
             defaultConfig {
                 minSdk = 26
             }

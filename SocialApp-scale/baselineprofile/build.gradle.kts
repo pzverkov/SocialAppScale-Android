@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.pzverkov.socialapp.baselineprofile"
-    compileSdk = 36
+    compileSdk = 37
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
