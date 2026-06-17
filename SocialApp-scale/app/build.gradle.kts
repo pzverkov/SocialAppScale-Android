@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     id("socialapp.android.application")
     alias(libs.plugins.metro)
+    id("androidx.baselineprofile")
 }
 
 kover {
@@ -141,7 +142,10 @@ dependencies {
     // by path holds no cross-project state, so this stays config-cache safe. :core:testing
     // is test-only scaffolding and is left out of the denominator.
     rootProject.subprojects
-        .filter { it.buildFile.exists() && it.path != project.path && it.path != ":core:testing" }
+        .filter {
+            it.buildFile.exists() && it.path != project.path &&
+                it.path != ":core:testing" && it.path != ":baselineprofile"
+        }
         .forEach { add("kover", project(it.path)) }
 
     // Compose
@@ -172,6 +176,10 @@ dependencies {
     // Core Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
+
+    // Installs the generated baseline profile at app startup; the :baselineprofile module produces it.
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(project(":baselineprofile"))
 
     // Unit testing
     testImplementation(project(":core:testing"))

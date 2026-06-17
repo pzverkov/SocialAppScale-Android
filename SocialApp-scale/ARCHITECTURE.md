@@ -146,6 +146,8 @@ The main scroll jank risk in a Compose grid is per-item allocation during recomp
 
 Other targeted fixes: `drawBehind` for gradient overlays (avoids a separate draw layer), file-level color/style constants (eliminates per-frame `Color.copy()` and `TextStyle.copy()` allocations), `LiveRegion` scoped to state-change views only (not the scrolling grid, where it causes accessibility service notifications on every scroll event).
 
+**Startup and edge-to-edge.** `MainActivity` calls `enableEdgeToEdge()` so the app draws behind the system bars (which `targetSdk 35+` enforces); the `Scaffold`-based screens consume the insets, and the grid adds the bottom system-bar inset so the last row clears the nav bar. A `:baselineprofile` module (the `androidx.baselineprofile` plugin on a `com.android.test` project) generates a baseline profile by exercising cold startup, the grid scroll, and opening a detail. The profile is generated on a Gradle-managed virtual device (`./gradlew :app:generateBaselineProfile`), so CI needs no physical hardware, and `androidx.profileinstaller` installs it at runtime to AOT-compile the startup and scroll paths.
+
 ## Deeplinks and Share
 
 For a marketplace, organic sharing is a primary growth channel. A shared link should land the receiver directly on the item, not on the home screen. Share links include an 8-character installation ID (truncated UUID, persisted in SharedPreferences): `socialapp://item/1?ref=a3b2c1d0`. The `ref` parameter enables share attribution without collecting PII.
@@ -165,11 +167,10 @@ The app registers both `socialapp://` (custom scheme, works immediately) and `ht
 - **State persistence** for ephemeral list state (search query, filter, grid mode), which is currently lost on process death. The ViewModels resolve through the metrox factory, which builds them from a plain `Provider` map with no `SavedStateHandle` plumbing; threading `SavedStateHandle` through that factory is the prerequisite, then the Store persists and restores screen state.
 - **Offline-first** with Room cache replacing the current in-memory `cachedItems` in `ItemRepositoryImpl`. The current cache is process-lifetime only with no invalidation beyond `forceRefresh`. At scale, Room with a sync timestamp provides persistence across app restarts and offline browsing, and folds in request single-flight (concurrent `forceRefresh` callers share one in-flight request) and Paging 3.
 - **Snapshot testing** (Paparazzi) for visual regression across screen states.
-- **Baseline profiles** plus edge-to-edge for startup and scroll optimization.
 - **Observability backend.** The `CrashReporter` seam and `BreadcrumbInterceptor` are in place with a Logcat binding; swapping in a vendor SDK (Crashlytics, Sentry) and wiring `mapping.txt` upload from CI turns the seam into real production telemetry.
 - **More on-device AI.** The ML Kit GenAI Prompt API is the recommended next increment (structured attribute extraction, category classification); see [On-device AI](#on-device-ai) for the full menu.
 
-Already landed from this list: the Store interceptor seam (now consumed by `:core:observability`), and the first on-device AI features (summarization, image description, and translation in `:core:ai`).
+Already landed from this list: the Store interceptor seam (now consumed by `:core:observability`), the first on-device AI features (summarization, image description, and translation in `:core:ai`), and edge-to-edge plus baseline-profile generation (`:baselineprofile`).
 
 ## Running the Project
 
