@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Release/base policy: no cleartext. The debug build overrides this with an
+     overlay that permits cleartext only for the local mock server. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

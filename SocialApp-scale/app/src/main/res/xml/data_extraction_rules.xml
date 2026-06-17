@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backup + device-to-device transfer rules (API 31+). Exclude the installation id
+     from both so a restored/transferred device does not inherit another install's
+     share-attribution (?ref=) identity. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="socialapp_install.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="socialapp_install.xml" />
+    </device-transfer>
+</data-extraction-rules>
