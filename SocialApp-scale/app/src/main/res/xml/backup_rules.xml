@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Auto Backup rules (API < 31). Exclude the installation id so a restored device
+     does not inherit another install's share-attribution (?ref=) identity. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="socialapp_install.xml" />
+</full-backup-content>
