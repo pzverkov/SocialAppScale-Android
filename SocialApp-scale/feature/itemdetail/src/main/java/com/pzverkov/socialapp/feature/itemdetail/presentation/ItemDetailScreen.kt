@@ -1,8 +1,10 @@
 package com.pzverkov.socialapp.feature.itemdetail.presentation
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -129,6 +131,7 @@ private fun ItemDetailContent(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val noMapsMessage = stringResource(R.string.no_maps_app)
     Column(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -208,7 +211,11 @@ private fun ItemDetailContent(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=${Uri.encode(item.location)}"))
-                        context.startActivity(intent)
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, noMapsMessage, Toast.LENGTH_SHORT).show()
+                        }
                     },
                 ) {
                     Icon(

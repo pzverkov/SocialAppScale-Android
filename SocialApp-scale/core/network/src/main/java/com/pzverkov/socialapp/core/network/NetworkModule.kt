@@ -12,8 +12,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = "http://10.0.2.2:3000"
-
 @ContributesTo(AppScope::class)
 interface NetworkProviders {
 
@@ -37,7 +35,7 @@ interface NetworkProviders {
         val json = Json { ignoreUnknownKeys = true }
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .client(client)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
