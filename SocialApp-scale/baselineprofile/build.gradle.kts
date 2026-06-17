@@ -27,12 +27,14 @@ android {
     // The app under instrumentation.
     targetProjectPath = ":app"
 
-    // A managed virtual device lets CI generate the profile with no physical hardware.
+    // A managed virtual device lets CI generate the profile with no physical hardware. The ATD
+    // (Automated Test Device) image is headless and stripped down, so it runs faster and lighter
+    // in CI than a full emulator; API 36 matches the app's compileSdk/targetSdk.
     testOptions.managedDevices.allDevices {
-        create<ManagedVirtualDevice>("pixel6Api34") {
+        create<ManagedVirtualDevice>("pixel6Api36") {
             device = "Pixel 6"
-            apiLevel = 34
-            systemImageSource = "aosp"
+            apiLevel = 36
+            systemImageSource = "aosp-atd"
         }
     }
 }
@@ -42,7 +44,7 @@ kotlin {
 }
 
 baselineProfile {
-    managedDevices += "pixel6Api34"
+    managedDevices += "pixel6Api36"
     // CI uses the managed device above; a developer with a device attached can flip this on.
     useConnectedDevices = false
 }
