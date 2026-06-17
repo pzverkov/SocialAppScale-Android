@@ -9,4 +9,5 @@ plugins {
     alias(libs.plugins.metro) apply false
     alias(libs.plugins.kover) apply false
     alias(libs.plugins.androidx.baselineprofile) apply false
+    alias(libs.plugins.roborazzi) apply false
 }
