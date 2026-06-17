@@ -18,17 +18,19 @@ Most apps stay single-module until build times and ownership force a split, by w
 SocialApp-scale/
   build-logic/                   # convention plugins: socialapp.android.*, socialapp.jvm.library
   core/
-    model/      (:core:model)    # Item, ErrorType - pure Kotlin
-    domain/     (:core:domain)   # repository contracts, NetworkResult - pure Kotlin
-    common/     (:core:common)   # Store, PriceFormatter - pure Kotlin
-    network/    (:core:network)  # Retrofit/OkHttp setup
-    ui/         (:core:ui)       # design system: theme, components, image loading
-    sharing/    (:core:sharing)  # ShareLinkBuilder, InstallationIdProvider
-    navigation/ (:core:navigation)  # shared deeplink scheme/host constants - pure Kotlin
-    testing/    (:core:testing)  # shared test doubles (fakes for the contracts)
+    model/         (:core:model)    # Item, ErrorType - pure Kotlin
+    domain/        (:core:domain)   # repository + CrashReporter contracts, NetworkResult - pure Kotlin
+    common/        (:core:common)   # Store + StoreInterceptor, PriceFormatter - pure Kotlin
+    network/       (:core:network)  # Retrofit/OkHttp setup, per-build-type BASE_URL
+    ui/            (:core:ui)       # design system: theme, components, image loading
+    sharing/       (:core:sharing)  # ShareLinkBuilder, InstallationIdProvider
+    navigation/    (:core:navigation)     # shared deeplink scheme/host constants - pure Kotlin
+    observability/ (:core:observability)  # CrashReporter impl + Store breadcrumb interceptor
+    ai/            (:core:ai)       # on-device Gemini Nano (ML Kit GenAI), device-gated
+    testing/       (:core:testing)  # shared test doubles (fakes for the contracts)
   feature/
     itemlist/   (:feature:itemlist)    # SocialAppApi, repo, DTOs, list screen + ViewModel, nav contract
-    itemdetail/ (:feature:itemdetail)  # detail screen + assisted-injected ViewModel, nav contract
+    itemdetail/ (:feature:itemdetail)  # detail screen + ViewModel, AI summary + alt text, nav contract
     favorite/   (:feature:favorite)    # data only (Room), no UI
   app/                           # Application, MainActivity, DI graph, navigation host
     core/di, core/navigation     # graph aggregation + NavHost stay in :app
@@ -37,9 +39,9 @@ SocialApp-scale/
 Every feature is its own module behind the `socialapp.android.feature` convention (favorite, being data-only, uses the plain library convention). `:app` is a thin composition root - it depends on each feature to aggregate their `@Contributes*` declarations and nav contracts, but holds no feature code:
 
 ```
-:app                ->  :feature:itemlist  :feature:itemdetail  :feature:favorite
+:app                ->  :feature:itemlist  :feature:itemdetail  :feature:favorite  :core:observability  :core:ai
 :feature:itemlist   ->  :core:model  :core:domain  :core:common  :core:network  :core:ui  :core:sharing
-:feature:itemdetail ->  :core:model  :core:domain  :core:common  :core:ui  :core:sharing  :core:navigation
+:feature:itemdetail ->  :core:model  :core:domain  :core:common  :core:ui  :core:sharing  :core:navigation  :core:ai
 :feature:favorite   ->  :core:domain
 ```
 
@@ -110,9 +112,9 @@ adb shell am start -a android.intent.action.VIEW -d "socialapp://item/1"
 
 Named on purpose, roughly in priority order:
 
-- **Cleartext traffic is enabled** (`usesCleartextTraffic="true"`) to talk to the local mock server. Production needs this off and a `network-security-config` that pins or at least restricts to HTTPS.
-- **No crash reporting or observability.** `mapping.txt` retention is set up, but nothing consumes it yet. Wiring a reporter is a prerequisite for trusting a release.
-- **Not every feature is its own module yet.** `:feature:itemlist` is extracted; `itemdetail` and `favorite` still live in `:app` and move to `:feature:*` next, reusing the `socialapp.android.feature` convention.
+- **No real backend.** Cleartext is now off on the release path (a `network-security-config` forbids it; a debug-only overlay permits it solely for the `10.0.2.2`/`localhost` mock server) and `BASE_URL` is a per-build-type field. The release host is a placeholder - production needs a real HTTPS API, plus the hosted `assetlinks.json` for App Links and ideally certificate pinning.
+- **Observability has a seam, not a backend.** A `CrashReporter` contract with a Logcat binding and a Store `BreadcrumbInterceptor` are wired; swapping in a vendor SDK (Crashlytics, Sentry) and uploading `mapping.txt` per release from CI is the remaining step.
+- **On-device AI needs capable hardware.** Summarization and image description run on Gemini Nano (ML Kit GenAI), present only on flagship devices (Pixel 9/10, Galaxy S25/S26 class). Everywhere else the client reports unavailable and the AI affordances stay hidden - the app is fully functional without them.
 
 ---
 

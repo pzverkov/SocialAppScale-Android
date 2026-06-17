@@ -52,21 +52,23 @@ The `Store<State, Event>` wraps `MutableStateFlow` for screen state and `Mutable
 
 **Why not use raw flows directly?** The SharedFlow configuration is non-obvious and error-prone if repeated: `extraBufferCapacity = 1` with `DROP_OLDEST` overflow and `tryEmit` (non-suspending) ensures events aren't lost during brief recomposition gaps and avoids coroutine leaks from suspended `emit` calls without collectors. The `updateState` function takes a reducer `(S) -> S`, using `MutableStateFlow.update` which retries on concurrent modification. In this codebase all state updates happen on `Dispatchers.Main`, so the retry mechanism is defensive rather than load-bearing, but it's the correct API to use regardless.
 
-At a larger scale, the Store becomes the point where interceptors plug in (logging, analytics, test state recording) without modifying each ViewModel.
+The Store is the point where interceptors plug in (logging, analytics, test state recording) without modifying each ViewModel. A `StoreInterceptor` observes every state transition and event; ViewModels collect a `Set<StoreInterceptor>` Metro multibinding and pass it to their Store. The `:core:observability` module contributes a `BreadcrumbInterceptor` that feeds those transitions to a `CrashReporter` (Logcat today, swappable for a vendor SDK through the DI binding), so a crash report carries the trail of UI states that led to it.
 
 ## Module Structure
 
 The `:core:*` layers and every `:feature:*` are Gradle modules behind convention plugins. `:app` is a thin composition root: it owns the Metro graph, the `NavHost`, `MainActivity`, and the `Application`, and depends on each feature to aggregate their contributions, but contains no feature screen, ViewModel, or data code.
 
 ```
-:core:model      # Item, ErrorType (pure Kotlin, no deps)
-:core:domain     # ItemRepository, FavoriteRepository, NetworkResult -> :core:model
-:core:common     # Store<State, Event>, PriceFormatter (pure Kotlin)
-:core:network    # OkHttp, Retrofit wiring
-:core:ui         # components, theme, image loading -> :core:model
-:core:sharing    # InstallationIdProvider, ShareLinkBuilder
-:core:navigation # shared deeplink scheme/host constants (pure Kotlin)
-:core:testing    # shared test doubles (fakes for the domain contracts) -> :core:domain
+:core:model         # Item, ErrorType (pure Kotlin, no deps)
+:core:domain        # ItemRepository, FavoriteRepository, CrashReporter, NetworkResult -> :core:model
+:core:common        # Store<State, Event> + StoreInterceptor, PriceFormatter (pure Kotlin)
+:core:network       # OkHttp, Retrofit wiring, per-build-type BASE_URL
+:core:ui            # components, theme, image loading -> :core:model
+:core:sharing       # InstallationIdProvider, ShareLinkBuilder
+:core:navigation    # shared deeplink scheme/host constants (pure Kotlin)
+:core:observability # LogcatCrashReporter + BreadcrumbInterceptor -> :core:common, :core:domain
+:core:ai            # OnDeviceAiClient: on-device Gemini Nano via ML Kit GenAI, device-gated
+:core:testing       # shared test doubles (fakes for the domain contracts) -> :core:domain
 
 :feature:itemlist    # SocialAppApi, ItemRepositoryImpl, DTO, list screen + ViewModel, nav contract
                      # -> :core:{model,domain,common,network,ui,sharing}
@@ -119,6 +121,21 @@ For a marketplace with a diverse, international user base, accessibility is both
 
 **Not yet covered:** Automated accessibility scanning in CI, TalkBack end-to-end testing, RTL layout verification, font scaling stress testing.
 
+## On-device AI
+
+On-device generative AI runs through `:core:ai`'s `OnDeviceAiClient`, backed by Gemini Nano via ML Kit GenAI (AICore). Two capabilities ship: text summarization of an item's description, and image description for accessibility.
+
+**Capability gating is the contract, not an afterthought.** ML Kit GenAI runs only on specific flagship hardware (Pixel 9/10, Galaxy S25/S26 class). Every call is safe on every device: `availability(feature)` maps `checkFeatureStatus()` to `AVAILABLE / DOWNLOADABLE / UNAVAILABLE`, and `summarize`/`describeImage` return a typed `AiResult` (`Success / Unavailable / Failed`) instead of throwing. On the ~99% of devices without the feature, the client reports `UNAVAILABLE` and the UI shows nothing extra - no crash, no degraded layout. `CancellationException` is rethrown, matching the repository's error-handling rule.
+
+**Why the contract lives in `:core:ai`, not `:core:domain`.** On-device AI is inherently platform-bound (AICore, `Bitmap`). Forcing it into the pure-Kotlin domain via a `ByteArray` round-trip would be an abstraction with no payoff. Features depend on `:core:ai` (a core module, allowed by the module rules); tests still swap the binding through Metro `replaces`, so testability is unchanged. The device-bound `MlKitOnDeviceAiClient` is excluded from coverage like the other hardware-backed implementations and is covered by a fake in the ViewModel tests.
+
+**Cost-aware by design.** Summarization is user-triggered (a "Summarize" chip shown only on capable devices), so no inference runs unless asked. Image description runs only when a screen reader is active (`AccessibilityManager.isTouchExplorationEnabled`) and the device supports it: sighted users pay nothing, while TalkBack users get an AI alt-text richer than the bare title. The bitmap is loaded once through the shared Coil cache (`allowHardware(false)` so ML Kit can read pixels), not re-fetched.
+
+**Other on-device AI the SDK offers** (next increments are a pick, not research):
+- *Gemini Nano tier (flagship-gated, ML Kit GenAI):* Proofreading and Rewriting (a seller listing composer), and the Prompt API for custom tasks - attribute extraction from descriptions, category classification, search-suggestion generation.
+- *Broad on-device tier (classic ML Kit, far beyond flagships):* on-device Translation (item descriptions for an international marketplace - the recommended next step), Entity Extraction (addresses/phones into action chips), Image Labeling / Object Detection (auto-tag photos, visual search), Smart Reply, Language ID.
+- *Custom-model tier:* LiteRT (TF Lite) + MediaPipe with NNAPI/GPU delegates for on-device embeddings - semantic and visual search.
+
 ## Performance
 
 The main scroll jank risk in a Compose grid is per-item allocation during recomposition. Two changes had the most impact:
@@ -145,11 +162,14 @@ The app registers both `socialapp://` (custom scheme, works immediately) and `ht
 
 - **DI-aggregated navigation.** Features currently expose `NavGraphBuilder` extensions that `:app` calls explicitly. The next step contributes each feature's nav registration into a Metro multibinding (`@ContributesIntoSet`) so `:app` iterates the set and names no feature at all; deferred for now because wiring inter-feature navigation callbacks through a pure multibinding is awkward.
 - **`:feature:*:api` / `:impl` split** so `:app` depends only on the api/nav surface and feature implementations aggregate at runtime. Worth it once `:app` build times bite.
-- **State persistence** for ephemeral list state (search query, filter, grid mode), which is currently lost on process death. At scale, the Store would persist and restore screen state automatically.
-- **Store interceptors** for logging, analytics event tracking, and test state recording.
+- **State persistence** for ephemeral list state (search query, filter, grid mode), which is currently lost on process death. The ViewModels resolve through the metrox factory, which builds them from a plain `Provider` map with no `SavedStateHandle` plumbing; threading `SavedStateHandle` through that factory is the prerequisite, then the Store persists and restores screen state.
+- **Offline-first** with Room cache replacing the current in-memory `cachedItems` in `ItemRepositoryImpl`. The current cache is process-lifetime only with no invalidation beyond `forceRefresh`. At scale, Room with a sync timestamp provides persistence across app restarts and offline browsing, and folds in request single-flight (concurrent `forceRefresh` callers share one in-flight request) and Paging 3.
 - **Snapshot testing** (Paparazzi) for visual regression across screen states.
-- **Offline-first** with Room cache replacing the current in-memory `cachedItems` in `ItemRepositoryImpl`. The current cache is process-lifetime only with no invalidation beyond `forceRefresh`. At scale, Room with a sync timestamp provides persistence across app restarts and offline browsing.
-- **Baseline profiles** for startup and scroll optimization.
+- **Baseline profiles** plus edge-to-edge for startup and scroll optimization.
+- **Observability backend.** The `CrashReporter` seam and `BreadcrumbInterceptor` are in place with a Logcat binding; swapping in a vendor SDK (Crashlytics, Sentry) and wiring `mapping.txt` upload from CI turns the seam into real production telemetry.
+- **More on-device AI.** On-device Translation is the recommended next AI increment (broad device reach); see [On-device AI](#on-device-ai) for the full menu.
+
+Already landed from this list: the Store interceptor seam (now consumed by `:core:observability`), and the first on-device AI features (summarization + image description in `:core:ai`).
 
 ## Running the Project
 
