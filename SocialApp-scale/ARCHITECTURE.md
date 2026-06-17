@@ -123,17 +123,17 @@ For a marketplace with a diverse, international user base, accessibility is both
 
 ## On-device AI
 
-On-device generative AI runs through `:core:ai`'s `OnDeviceAiClient`, backed by Gemini Nano via ML Kit GenAI (AICore). Two capabilities ship: text summarization of an item's description, and image description for accessibility.
+On-device AI lives in `:core:ai`, split across two backends with different reach. `OnDeviceAiClient` wraps Gemini Nano via ML Kit GenAI (AICore) for description summarization and image description; `OnDeviceTranslator` wraps classic ML Kit translation + language identification for translating an item's description. The two are separate interfaces because their availability models differ: Gemini Nano is flagship-gated, while translation runs on essentially any device and only pays a one-time per-language-pair model download.
 
 **Capability gating is the contract, not an afterthought.** ML Kit GenAI runs only on specific flagship hardware (Pixel 9/10, Galaxy S25/S26 class). Every call is safe on every device: `availability(feature)` maps `checkFeatureStatus()` to `AVAILABLE / DOWNLOADABLE / UNAVAILABLE`, and `summarize`/`describeImage` return a typed `AiResult` (`Success / Unavailable / Failed`) instead of throwing. On the ~99% of devices without the feature, the client reports `UNAVAILABLE` and the UI shows nothing extra - no crash, no degraded layout. `CancellationException` is rethrown, matching the repository's error-handling rule.
 
 **Why the contract lives in `:core:ai`, not `:core:domain`.** On-device AI is inherently platform-bound (AICore, `Bitmap`). Forcing it into the pure-Kotlin domain via a `ByteArray` round-trip would be an abstraction with no payoff. Features depend on `:core:ai` (a core module, allowed by the module rules); tests still swap the binding through Metro `replaces`, so testability is unchanged. The device-bound `MlKitOnDeviceAiClient` is excluded from coverage like the other hardware-backed implementations and is covered by a fake in the ViewModel tests.
 
-**Cost-aware by design.** Summarization is user-triggered (a "Summarize" chip shown only on capable devices), so no inference runs unless asked. Image description runs only when a screen reader is active (`AccessibilityManager.isTouchExplorationEnabled`) and the device supports it: sighted users pay nothing, while TalkBack users get an AI alt-text richer than the bare title. The bitmap is loaded once through the shared Coil cache (`allowHardware(false)` so ML Kit can read pixels), not re-fetched.
+**Cost-aware by design.** Summarization is user-triggered (a "Summarize" chip shown only on capable devices), so no inference runs unless asked. Image description runs only when a screen reader is active (`AccessibilityManager.isTouchExplorationEnabled`) and the device supports it: sighted users pay nothing, while TalkBack users get an AI alt-text richer than the bare title. The bitmap is loaded once through the shared Coil cache (`allowHardware(false)` so ML Kit can read pixels), not re-fetched. Translation follows the same restraint: the detail screen offers it only when language identification finds the description is in a language other than the device's, and the model download happens on the first tap, not on load.
 
 **Other on-device AI the SDK offers** (next increments are a pick, not research):
-- *Gemini Nano tier (flagship-gated, ML Kit GenAI):* Proofreading and Rewriting (a seller listing composer), and the Prompt API for custom tasks - attribute extraction from descriptions, category classification, search-suggestion generation.
-- *Broad on-device tier (classic ML Kit, far beyond flagships):* on-device Translation (item descriptions for an international marketplace - the recommended next step), Entity Extraction (addresses/phones into action chips), Image Labeling / Object Detection (auto-tag photos, visual search), Smart Reply, Language ID.
+- *Gemini Nano tier (flagship-gated, ML Kit GenAI):* Proofreading and Rewriting (a seller listing composer), and the Prompt API for custom tasks - attribute extraction from descriptions, category classification, search-suggestion generation. The Prompt API is the recommended next step.
+- *Broad on-device tier (classic ML Kit, far beyond flagships):* Entity Extraction (addresses/phones into action chips), Image Labeling / Object Detection (auto-tag photos, visual search), Smart Reply. (Translation and Language ID already ship.)
 - *Custom-model tier:* LiteRT (TF Lite) + MediaPipe with NNAPI/GPU delegates for on-device embeddings - semantic and visual search.
 
 ## Performance
@@ -167,9 +167,9 @@ The app registers both `socialapp://` (custom scheme, works immediately) and `ht
 - **Snapshot testing** (Paparazzi) for visual regression across screen states.
 - **Baseline profiles** plus edge-to-edge for startup and scroll optimization.
 - **Observability backend.** The `CrashReporter` seam and `BreadcrumbInterceptor` are in place with a Logcat binding; swapping in a vendor SDK (Crashlytics, Sentry) and wiring `mapping.txt` upload from CI turns the seam into real production telemetry.
-- **More on-device AI.** On-device Translation is the recommended next AI increment (broad device reach); see [On-device AI](#on-device-ai) for the full menu.
+- **More on-device AI.** The ML Kit GenAI Prompt API is the recommended next increment (structured attribute extraction, category classification); see [On-device AI](#on-device-ai) for the full menu.
 
-Already landed from this list: the Store interceptor seam (now consumed by `:core:observability`), and the first on-device AI features (summarization + image description in `:core:ai`).
+Already landed from this list: the Store interceptor seam (now consumed by `:core:observability`), and the first on-device AI features (summarization, image description, and translation in `:core:ai`).
 
 ## Running the Project
 

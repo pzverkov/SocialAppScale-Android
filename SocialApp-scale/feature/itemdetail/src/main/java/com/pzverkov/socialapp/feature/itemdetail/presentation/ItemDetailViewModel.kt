@@ -7,7 +7,9 @@ import com.pzverkov.socialapp.core.ai.AiAvailability
 import com.pzverkov.socialapp.core.ai.AiFeature
 import com.pzverkov.socialapp.core.ai.AiResult
 import com.pzverkov.socialapp.core.ai.OnDeviceAiClient
+import com.pzverkov.socialapp.core.ai.OnDeviceTranslator
 import com.pzverkov.socialapp.core.domain.NetworkResult
+import java.util.Locale
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
 import com.pzverkov.socialapp.core.store.Store
 import com.pzverkov.socialapp.core.store.StoreInterceptor
@@ -32,6 +34,7 @@ class ItemDetailViewModel(
     private val favoriteRepository: FavoriteRepository,
     private val shareLinkBuilder: ShareLinkBuilder,
     private val aiClient: OnDeviceAiClient,
+    private val translator: OnDeviceTranslator,
     storeInterceptors: Set<@JvmSuppressWildcards StoreInterceptor> = emptySet(),
 ) : ViewModel() {
 
@@ -44,6 +47,7 @@ class ItemDetailViewModel(
     val events: SharedFlow<ItemDetailEvent> = store.events
 
     private var loadedItem: Item? = null
+    private var sourceLanguageTag: String? = null
 
     init {
         loadItem()
@@ -83,6 +87,17 @@ class ItemDetailViewModel(
                     canDescribeImage = canDescribe,
                 )
             }
+            resolveTranslation()
+        }
+    }
+
+    /** Offer translation only when the description is in a language other than the device's. */
+    private suspend fun resolveTranslation() {
+        val item = loadedItem ?: return
+        val detected = translator.detectLanguage(item.description) ?: return
+        if (detected != Locale.getDefault().language) {
+            sourceLanguageTag = detected
+            updateLoaded { it.copy(translation = TranslationUiState.Available(detected)) }
         }
     }
 
@@ -106,6 +121,25 @@ class ItemDetailViewModel(
             }
             updateLoaded { it.copy(summary = summary) }
         }
+    }
+
+    fun onTranslateClicked() {
+        val loaded = state.value as? ItemDetailState.Loaded ?: return
+        val source = sourceLanguageTag ?: return
+        val text = loaded.item.description
+        updateLoaded { it.copy(translation = TranslationUiState.Loading) }
+        viewModelScope.launch {
+            val next = when (val result = translator.translate(text, source, Locale.getDefault().language)) {
+                is AiResult.Success -> TranslationUiState.Translated(result.value)
+                else -> TranslationUiState.Failed
+            }
+            updateLoaded { it.copy(translation = next) }
+        }
+    }
+
+    fun onShowOriginalClicked() {
+        val source = sourceLanguageTag ?: return
+        updateLoaded { it.copy(translation = TranslationUiState.Available(source)) }
     }
 
     /** Image bitmap supplied by the screen for on-device alt-text generation (a11y path). */

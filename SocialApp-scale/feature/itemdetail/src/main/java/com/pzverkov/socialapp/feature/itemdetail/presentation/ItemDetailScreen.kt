@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -46,6 +48,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -123,6 +126,8 @@ fun ItemDetailScreen(
                 onFavoriteClick = viewModel::onFavoriteClicked,
                 onBuyClick = viewModel::onBuyClicked,
                 onSummarizeClick = viewModel::onSummarizeClicked,
+                onTranslateClick = viewModel::onTranslateClicked,
+                onShowOriginalClick = viewModel::onShowOriginalClicked,
                 onImageLoaded = viewModel::onImageLoaded,
                 modifier = Modifier.padding(padding),
             )
@@ -138,6 +143,8 @@ private fun ItemDetailContent(
     onFavoriteClick: () -> Unit,
     onBuyClick: () -> Unit,
     onSummarizeClick: () -> Unit,
+    onTranslateClick: () -> Unit,
+    onShowOriginalClick: () -> Unit,
     onImageLoaded: (Bitmap) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -267,6 +274,12 @@ private fun ItemDetailContent(
                     textAlign = TextAlign.Justify,
                 )
 
+                TranslationSection(
+                    translation = state.translation,
+                    onTranslateClick = onTranslateClick,
+                    onShowOriginalClick = onShowOriginalClick,
+                )
+
                 AiSummarySection(summary = state.summary, onSummarizeClick = onSummarizeClick)
 
                 Spacer(modifier = Modifier.height(Dimens.SpacingXl))
@@ -285,6 +298,72 @@ private fun ItemDetailContent(
                 shape = RoundedCornerShape(Dimens.CardRadius),
             ) {
                 Text(stringResource(R.string.buy_now), style = MaterialTheme.typography.labelLarge)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TranslationSection(
+    translation: TranslationUiState,
+    onTranslateClick: () -> Unit,
+    onShowOriginalClick: () -> Unit,
+) {
+    when (translation) {
+        TranslationUiState.Hidden -> Unit
+        is TranslationUiState.Available, TranslationUiState.Failed -> {
+            Spacer(modifier = Modifier.height(Dimens.SpacingMd))
+            OutlinedButton(onClick = onTranslateClick) {
+                Icon(Icons.Default.Translate, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(Dimens.SpacingXs))
+                Text(stringResource(R.string.translate_description))
+            }
+            if (translation == TranslationUiState.Failed) {
+                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                Text(
+                    text = stringResource(R.string.translation_failed),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+        TranslationUiState.Loading -> {
+            Spacer(modifier = Modifier.height(Dimens.SpacingMd))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                Spacer(modifier = Modifier.width(Dimens.SpacingSm))
+                Text(
+                    text = stringResource(R.string.translation_in_progress),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+        is TranslationUiState.Translated -> {
+            Spacer(modifier = Modifier.height(Dimens.SpacingMd))
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                ),
+                shape = RoundedCornerShape(Dimens.CardRadius),
+            ) {
+                Column(modifier = Modifier.padding(Dimens.SpacingMd)) {
+                    Text(
+                        text = stringResource(R.string.translation_label),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                    Text(
+                        text = translation.text,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                    TextButton(onClick = onShowOriginalClick, contentPadding = PaddingValues(0.dp)) {
+                        Text(stringResource(R.string.show_original))
+                    }
+                }
             }
         }
     }
