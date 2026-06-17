@@ -303,8 +303,10 @@ private fun ItemDetailContent(
     }
 }
 
+// Public so the :screenshot:itemdetail module can render it in isolation; its parameters are
+// already public state types, so this exposes no internals.
 @Composable
-private fun TranslationSection(
+fun TranslationSection(
     translation: TranslationUiState,
     onTranslateClick: () -> Unit,
     onShowOriginalClick: () -> Unit,
@@ -369,8 +371,9 @@ private fun TranslationSection(
     }
 }
 
+// Public so the :screenshot:itemdetail module can render it in isolation (see TranslationSection).
 @Composable
-private fun AiSummarySection(
+fun AiSummarySection(
     summary: SummaryUiState,
     onSummarizeClick: () -> Unit,
 ) {
