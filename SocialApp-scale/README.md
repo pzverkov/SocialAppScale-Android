@@ -34,6 +34,7 @@ SocialApp-scale/
     favorite/   (:feature:favorite)    # data only (Room), no UI
   app/                           # Application, MainActivity, DI graph, navigation host
     core/di, core/navigation     # graph aggregation + NavHost stay in :app
+  baselineprofile/               # macrobenchmark that generates the startup/scroll baseline profile
 ```
 
 Every feature is its own module behind the `socialapp.android.feature` convention (favorite, being data-only, uses the plain library convention). `:app` is a thin composition root - it depends on each feature to aggregate their `@Contributes*` declarations and nav contracts, but holds no feature code:
