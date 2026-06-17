@@ -2,7 +2,7 @@ package com.pzverkov.socialapp.core.di
 
 import android.app.Application
 import android.content.Context
-import coil.ImageLoader
+import coil3.ImageLoader
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.DependencyGraph
@@ -19,7 +19,7 @@ interface AppGraphContract {
     /** The injected [MetroViewModelFactory] used by metroViewModel()/assistedMetroViewModel(). */
     val viewModelFactory: MetroViewModelFactory
 
-    /** Coil image loader, consumed by the Application's ImageLoaderFactory. */
+    /** Coil image loader, consumed by the Application's SingletonImageLoader.Factory. */
     val imageLoader: ImageLoader
 }
 
