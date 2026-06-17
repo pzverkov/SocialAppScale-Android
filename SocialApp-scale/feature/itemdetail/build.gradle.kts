@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(project(":core:sharing"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:ai"))
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.junit)

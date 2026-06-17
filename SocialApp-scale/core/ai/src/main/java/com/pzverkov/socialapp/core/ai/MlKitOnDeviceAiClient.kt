@@ -34,23 +34,30 @@ class MlKitOnDeviceAiClient(
     private val context: Context,
 ) : OnDeviceAiClient {
 
-    override suspend fun availability(feature: AiFeature): AiAvailability = when (feature) {
-        AiFeature.SUMMARIZATION -> {
-            val client = newSummarizer()
-            try {
-                client.checkFeatureStatus().await().toAvailability()
-            } finally {
-                client.close()
+    override suspend fun availability(feature: AiFeature): AiAvailability = try {
+        when (feature) {
+            AiFeature.SUMMARIZATION -> {
+                val client = newSummarizer()
+                try {
+                    client.checkFeatureStatus().await().toAvailability()
+                } finally {
+                    client.close()
+                }
+            }
+            AiFeature.IMAGE_DESCRIPTION -> {
+                val client = newImageDescriber()
+                try {
+                    client.checkFeatureStatus().await().toAvailability()
+                } finally {
+                    client.close()
+                }
             }
         }
-        AiFeature.IMAGE_DESCRIPTION -> {
-            val client = newImageDescriber()
-            try {
-                client.checkFeatureStatus().await().toAvailability()
-            } finally {
-                client.close()
-            }
-        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        // No AICore / unsupported device: treat as unavailable rather than crashing the caller.
+        AiAvailability.UNAVAILABLE
     }
 
     override suspend fun summarize(text: String): AiResult<String> = runCatchingAi {
