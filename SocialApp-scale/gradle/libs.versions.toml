@@ -1,5 +1,8 @@
 [versions]
 agp = "9.2.1"
+# Kotlin stays on 2.3.20: Kotlin 2.4.0 needs Metro 1.x (which requires 2.4.0+) AND a KSP build
+# for 2.4, but KSP tops out at 2.3.9 and Room compiles via KSP in :feature:favorite. Revisit the
+# Kotlin 2.4 + Metro 1.x bump once KSP ships a 2.4-compatible release.
 kotlin = "2.3.20"
 ksp = "2.3.9"
 hilt = "2.59.2"
