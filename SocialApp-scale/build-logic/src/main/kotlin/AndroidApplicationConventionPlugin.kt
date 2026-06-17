@@ -21,7 +21,9 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         }
 
         extensions.configure<ApplicationExtension> {
-            compileSdk = 36
+            // compileSdk runs ahead of targetSdk: it lets newer-API libraries (androidx.core 1.19+)
+            // compile, while targetSdk 36 keeps runtime behavior unchanged.
+            compileSdk = 37
             defaultConfig {
                 minSdk = 26
                 targetSdk = 36
