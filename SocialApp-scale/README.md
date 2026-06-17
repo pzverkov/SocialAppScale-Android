@@ -26,11 +26,11 @@ SocialApp-scale/
     sharing/       (:core:sharing)  # ShareLinkBuilder, InstallationIdProvider
     navigation/    (:core:navigation)     # shared deeplink scheme/host constants - pure Kotlin
     observability/ (:core:observability)  # CrashReporter impl + Store breadcrumb interceptor
-    ai/            (:core:ai)       # on-device Gemini Nano (ML Kit GenAI), device-gated
+    ai/            (:core:ai)       # on-device AI: Gemini Nano (GenAI) + ML Kit translation
     testing/       (:core:testing)  # shared test doubles (fakes for the contracts)
   feature/
     itemlist/   (:feature:itemlist)    # SocialAppApi, repo, DTOs, list screen + ViewModel, nav contract
-    itemdetail/ (:feature:itemdetail)  # detail screen + ViewModel, AI summary + alt text, nav contract
+    itemdetail/ (:feature:itemdetail)  # detail screen + ViewModel, AI summary, translation, alt text, nav contract
     favorite/   (:feature:favorite)    # data only (Room), no UI
   app/                           # Application, MainActivity, DI graph, navigation host
     core/di, core/navigation     # graph aggregation + NavHost stay in :app
@@ -114,7 +114,7 @@ Named on purpose, roughly in priority order:
 
 - **No real backend.** Cleartext is now off on the release path (a `network-security-config` forbids it; a debug-only overlay permits it solely for the `10.0.2.2`/`localhost` mock server) and `BASE_URL` is a per-build-type field. The release host is a placeholder - production needs a real HTTPS API, plus the hosted `assetlinks.json` for App Links and ideally certificate pinning.
 - **Observability has a seam, not a backend.** A `CrashReporter` contract with a Logcat binding and a Store `BreadcrumbInterceptor` are wired; swapping in a vendor SDK (Crashlytics, Sentry) and uploading `mapping.txt` per release from CI is the remaining step.
-- **On-device AI needs capable hardware.** Summarization and image description run on Gemini Nano (ML Kit GenAI), present only on flagship devices (Pixel 9/10, Galaxy S25/S26 class). Everywhere else the client reports unavailable and the AI affordances stay hidden - the app is fully functional without them.
+- **Some on-device AI needs capable hardware.** Summarization and image description run on Gemini Nano (ML Kit GenAI), present only on flagship devices (Pixel 9/10, Galaxy S25/S26 class); elsewhere the client reports unavailable and those affordances stay hidden. Translation uses classic ML Kit and runs on nearly all devices, downloading a language model on first use. The app is fully functional without any of them.
 
 ---
 

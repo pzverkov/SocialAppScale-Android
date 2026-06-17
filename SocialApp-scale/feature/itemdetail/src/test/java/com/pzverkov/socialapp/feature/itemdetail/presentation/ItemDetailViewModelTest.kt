@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import java.util.Locale
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -30,6 +31,7 @@ class ItemDetailViewModelTest {
     private lateinit var fakeRepository: FakeItemRepository
     private lateinit var fakeFavoriteRepository: FakeFavoriteRepository
     private lateinit var fakeAiClient: FakeOnDeviceAiClient
+    private lateinit var fakeTranslator: FakeOnDeviceTranslator
 
     private val fakeIdProvider = object : InstallationIdProvider {
         override fun get() = "test1234"
@@ -41,6 +43,7 @@ class ItemDetailViewModelTest {
         fakeRepository = FakeItemRepository()
         fakeFavoriteRepository = FakeFavoriteRepository()
         fakeAiClient = FakeOnDeviceAiClient()
+        fakeTranslator = FakeOnDeviceTranslator()
     }
 
     @After
@@ -55,8 +58,11 @@ class ItemDetailViewModelTest {
             favoriteRepository = fakeFavoriteRepository,
             shareLinkBuilder = ShareLinkBuilder(fakeIdProvider),
             aiClient = fakeAiClient,
+            translator = fakeTranslator,
         )
     }
+
+    private val foreignLanguage = if (Locale.getDefault().language == "es") "fr" else "es"
 
     @Test
     fun `loading transitions to loaded with correct item`() = runTest(testDispatcher) {
@@ -207,6 +213,78 @@ class ItemDetailViewModelTest {
         advanceUntilIdle()
 
         assertTrue((viewModel.state.value as ItemDetailState.Loaded).canDescribeImage)
+    }
+
+    @Test
+    fun `translation hidden when description matches device language`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeTranslator.detectedLanguage = Locale.getDefault().language
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        assertEquals(TranslationUiState.Hidden, (viewModel.state.value as ItemDetailState.Loaded).translation)
+    }
+
+    @Test
+    fun `translation offered when description language differs`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeTranslator.detectedLanguage = foreignLanguage
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        assertEquals(
+            TranslationUiState.Available(foreignLanguage),
+            (viewModel.state.value as ItemDetailState.Loaded).translation,
+        )
+    }
+
+    @Test
+    fun `translate click produces translated text`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeTranslator.detectedLanguage = foreignLanguage
+        fakeTranslator.translateResult = AiResult.Success("Translated text")
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        viewModel.onTranslateClicked()
+        advanceUntilIdle()
+
+        assertEquals(
+            TranslationUiState.Translated("Translated text"),
+            (viewModel.state.value as ItemDetailState.Loaded).translation,
+        )
+    }
+
+    @Test
+    fun `translate failure shows failed state`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeTranslator.detectedLanguage = foreignLanguage
+        fakeTranslator.translateResult = AiResult.Failed(RuntimeException("boom"))
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        viewModel.onTranslateClicked()
+        advanceUntilIdle()
+
+        assertEquals(TranslationUiState.Failed, (viewModel.state.value as ItemDetailState.Loaded).translation)
+    }
+
+    @Test
+    fun `show original reverts translation to available`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeTranslator.detectedLanguage = foreignLanguage
+        fakeTranslator.translateResult = AiResult.Success("Translated text")
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        viewModel.onTranslateClicked()
+        advanceUntilIdle()
+        viewModel.onShowOriginalClicked()
+
+        assertEquals(
+            TranslationUiState.Available(foreignLanguage),
+            (viewModel.state.value as ItemDetailState.Loaded).translation,
+        )
     }
 
     companion object {

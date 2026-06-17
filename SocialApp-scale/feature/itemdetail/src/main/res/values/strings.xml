@@ -10,4 +10,9 @@
     <string name="ai_summary_label">AI summary</string>
     <string name="ai_summary_in_progress">Summarizing...</string>
     <string name="ai_summary_failed">Could not generate a summary</string>
+    <string name="translate_description">Translate description</string>
+    <string name="show_original">Show original</string>
+    <string name="translation_in_progress">Translating...</string>
+    <string name="translation_label">Translated description</string>
+    <string name="translation_failed">Could not translate</string>
 </resources>
