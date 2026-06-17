@@ -1,6 +1,8 @@
 package com.pzverkov.socialapp.feature.itemdetail.presentation
 
 import app.cash.turbine.test
+import com.pzverkov.socialapp.core.ai.AiAvailability
+import com.pzverkov.socialapp.core.ai.AiResult
 import com.pzverkov.socialapp.core.domain.NetworkResult
 import com.pzverkov.socialapp.core.sharing.InstallationIdProvider
 import com.pzverkov.socialapp.core.sharing.ShareLinkBuilder
@@ -10,6 +12,7 @@ import com.pzverkov.socialapp.core.testing.FakeItemRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -26,6 +29,7 @@ class ItemDetailViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeRepository: FakeItemRepository
     private lateinit var fakeFavoriteRepository: FakeFavoriteRepository
+    private lateinit var fakeAiClient: FakeOnDeviceAiClient
 
     private val fakeIdProvider = object : InstallationIdProvider {
         override fun get() = "test1234"
@@ -36,6 +40,7 @@ class ItemDetailViewModelTest {
         Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeItemRepository()
         fakeFavoriteRepository = FakeFavoriteRepository()
+        fakeAiClient = FakeOnDeviceAiClient()
     }
 
     @After
@@ -49,6 +54,7 @@ class ItemDetailViewModelTest {
             itemRepository = fakeRepository,
             favoriteRepository = fakeFavoriteRepository,
             shareLinkBuilder = ShareLinkBuilder(fakeIdProvider),
+            aiClient = fakeAiClient,
         )
     }
 
@@ -144,6 +150,63 @@ class ItemDetailViewModelTest {
         viewModel.onShareClicked()
         viewModel.onBuyClicked()
         // No crash, no event emitted
+    }
+
+    @Test
+    fun `summary hidden when device lacks ai support`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        assertEquals(SummaryUiState.Hidden, (viewModel.state.value as ItemDetailState.Loaded).summary)
+    }
+
+    @Test
+    fun `summary becomes available when device supports summarization`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeAiClient.summarizationAvailability = AiAvailability.AVAILABLE
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        assertEquals(SummaryUiState.Available, (viewModel.state.value as ItemDetailState.Loaded).summary)
+    }
+
+    @Test
+    fun `summarize click produces ready summary`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeAiClient.summarizationAvailability = AiAvailability.AVAILABLE
+        fakeAiClient.summarizeResult = AiResult.Success("Short summary")
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        viewModel.onSummarizeClicked()
+        advanceUntilIdle()
+
+        assertEquals(SummaryUiState.Ready("Short summary"), (viewModel.state.value as ItemDetailState.Loaded).summary)
+    }
+
+    @Test
+    fun `summarize failure shows failed state`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeAiClient.summarizationAvailability = AiAvailability.AVAILABLE
+        fakeAiClient.summarizeResult = AiResult.Failed(RuntimeException("boom"))
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        viewModel.onSummarizeClicked()
+        advanceUntilIdle()
+
+        assertEquals(SummaryUiState.Failed, (viewModel.state.value as ItemDetailState.Loaded).summary)
+    }
+
+    @Test
+    fun `image description capability enables alt text generation`() = runTest(testDispatcher) {
+        fakeRepository.itemsResult = NetworkResult.Success(sampleItems)
+        fakeAiClient.imageAvailability = AiAvailability.AVAILABLE
+        val viewModel = createViewModel(itemId = 1)
+        advanceUntilIdle()
+
+        assertTrue((viewModel.state.value as ItemDetailState.Loaded).canDescribeImage)
     }
 
     companion object {

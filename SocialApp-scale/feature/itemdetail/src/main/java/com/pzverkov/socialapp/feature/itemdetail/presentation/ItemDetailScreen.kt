@@ -2,8 +2,11 @@ package com.pzverkov.socialapp.feature.itemdetail.presentation
 
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
+import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,14 +30,17 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -57,6 +63,7 @@ import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import com.pzverkov.socialapp.core.ui.components.ErrorState
 import com.pzverkov.socialapp.core.ui.components.ItemImage
 import com.pzverkov.socialapp.core.ui.components.LoadingIndicator
+import com.pzverkov.socialapp.core.ui.loadBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -110,11 +117,13 @@ fun ItemDetailScreen(
                 modifier = Modifier.padding(padding),
             )
             is ItemDetailState.Loaded -> ItemDetailContent(
-                item = current.item,
+                state = current,
                 onNavigateBack = onNavigateBack,
                 onShareClick = viewModel::onShareClicked,
                 onFavoriteClick = viewModel::onFavoriteClicked,
                 onBuyClick = viewModel::onBuyClicked,
+                onSummarizeClick = viewModel::onSummarizeClicked,
+                onImageLoaded = viewModel::onImageLoaded,
                 modifier = Modifier.padding(padding),
             )
         }
@@ -123,15 +132,27 @@ fun ItemDetailScreen(
 
 @Composable
 private fun ItemDetailContent(
-    item: ItemDetailUiModel,
+    state: ItemDetailState.Loaded,
     onNavigateBack: () -> Unit,
     onShareClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onBuyClick: () -> Unit,
+    onSummarizeClick: () -> Unit,
+    onImageLoaded: (Bitmap) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val item = state.item
     val context = LocalContext.current
     val noMapsMessage = stringResource(R.string.no_maps_app)
+
+    // Generate AI alt text only for screen-reader users on capable devices, so sighted users
+    // never pay the inference cost. Falls back to the title until (or unless) it resolves.
+    LaunchedEffect(state.canDescribeImage, item.imageUrl) {
+        if (state.canDescribeImage && context.isScreenReaderActive()) {
+            loadBitmap(context, item.imageUrl)?.let(onImageLoaded)
+        }
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -141,7 +162,7 @@ private fun ItemDetailContent(
             Box {
                 ItemImage(
                     imageUrl = item.imageUrl,
-                    contentDescription = item.title,
+                    contentDescription = state.imageContentDescription ?: item.title,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(Dimens.DetailImageHeight),
@@ -246,6 +267,8 @@ private fun ItemDetailContent(
                     textAlign = TextAlign.Justify,
                 )
 
+                AiSummarySection(summary = state.summary, onSummarizeClick = onSummarizeClick)
+
                 Spacer(modifier = Modifier.height(Dimens.SpacingXl))
                 SellerCard(sellerName = item.sellerName)
                 Spacer(modifier = Modifier.height(Dimens.SpacingLg))
@@ -265,6 +288,72 @@ private fun ItemDetailContent(
             }
         }
     }
+}
+
+@Composable
+private fun AiSummarySection(
+    summary: SummaryUiState,
+    onSummarizeClick: () -> Unit,
+) {
+    when (summary) {
+        SummaryUiState.Hidden -> Unit
+        SummaryUiState.Available, SummaryUiState.Failed -> {
+            Spacer(modifier = Modifier.height(Dimens.SpacingMd))
+            OutlinedButton(onClick = onSummarizeClick) {
+                Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(Dimens.SpacingXs))
+                Text(stringResource(R.string.summarize_with_ai))
+            }
+            if (summary == SummaryUiState.Failed) {
+                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                Text(
+                    text = stringResource(R.string.ai_summary_failed),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+        SummaryUiState.Loading -> {
+            Spacer(modifier = Modifier.height(Dimens.SpacingMd))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                Spacer(modifier = Modifier.width(Dimens.SpacingSm))
+                Text(
+                    text = stringResource(R.string.ai_summary_in_progress),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+        is SummaryUiState.Ready -> {
+            Spacer(modifier = Modifier.height(Dimens.SpacingMd))
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                shape = RoundedCornerShape(Dimens.CardRadius),
+            ) {
+                Column(modifier = Modifier.padding(Dimens.SpacingMd)) {
+                    Text(
+                        text = stringResource(R.string.ai_summary_label),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                    Text(
+                        text = summary.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun Context.isScreenReaderActive(): Boolean {
+    val manager = getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager ?: return false
+    return manager.isEnabled && manager.isTouchExplorationEnabled
 }
 
 @Composable

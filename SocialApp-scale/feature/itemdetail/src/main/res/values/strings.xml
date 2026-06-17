@@ -6,4 +6,8 @@
     <string name="view_profile">View profile</string>
     <string name="purchase_coming_soon">Purchase flow for %s coming soon!</string>
     <string name="no_maps_app">No app available to open the map</string>
+    <string name="summarize_with_ai">Summarize with AI</string>
+    <string name="ai_summary_label">AI summary</string>
+    <string name="ai_summary_in_progress">Summarizing...</string>
+    <string name="ai_summary_failed">Could not generate a summary</string>
 </resources>
