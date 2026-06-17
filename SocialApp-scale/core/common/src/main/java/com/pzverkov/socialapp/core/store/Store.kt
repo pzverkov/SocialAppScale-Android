@@ -9,7 +9,21 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class Store<S, E>(initialState: S) {
+/**
+ * Observes state transitions and events flowing through a [Store]. The single point where
+ * cross-cutting concerns (logging, analytics, crash breadcrumbs, test recording) plug in
+ * without each ViewModel knowing about them. Callbacks receive [Any] because a [Store] is
+ * generic; an interceptor inspects the runtime type it cares about.
+ */
+interface StoreInterceptor {
+    fun onState(old: Any?, new: Any?)
+    fun onEvent(event: Any?)
+}
+
+class Store<S, E>(
+    initialState: S,
+    private val interceptors: List<StoreInterceptor> = emptyList(),
+) {
 
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<S> = _state.asStateFlow()
@@ -21,10 +35,18 @@ class Store<S, E>(initialState: S) {
     val events: SharedFlow<E> = _events.asSharedFlow()
 
     fun updateState(reducer: (S) -> S) {
+        val old = _state.value
         _state.update(reducer)
+        val new = _state.value
+        if (old !== new && interceptors.isNotEmpty()) {
+            interceptors.forEach { it.onState(old, new) }
+        }
     }
 
     fun emitEvent(event: E) {
         _events.tryEmit(event)
+        if (interceptors.isNotEmpty()) {
+            interceptors.forEach { it.onEvent(event) }
+        }
     }
 }
