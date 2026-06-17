@@ -285,7 +285,8 @@ private fun ItemGrid(
         contentPadding = PaddingValues(
             start = Dimens.SpacingMd, end = Dimens.SpacingMd,
             top = contentPadding.calculateTopPadding() + Dimens.SpacingSm,
-            bottom = Dimens.SpacingMd,
+            // Include the bottom system-bar inset so the last row clears the nav bar edge-to-edge.
+            bottom = contentPadding.calculateBottomPadding() + Dimens.SpacingMd,
         ),
         horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
         verticalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
