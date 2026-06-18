@@ -62,8 +62,8 @@ The `:core:*` layers and every `:feature:*` are Gradle modules behind convention
 :core:model         # Item, ErrorType (pure Kotlin, no deps)
 :core:domain        # ItemRepository, FavoriteRepository, CrashReporter, NetworkResult -> :core:model
 :core:common        # Store<State, Event> + StoreInterceptor, PriceFormatter (pure Kotlin)
-:core:network       # OkHttp, Retrofit wiring, per-build-type BASE_URL
-:core:ui            # components, theme, image loading -> :core:model
+:core:network       # OkHttp, Retrofit wiring, the Coil ImageLoader, per-build-type BASE_URL
+:core:ui            # components, theme, AsyncImage rendering -> :core:model
 :core:sharing       # InstallationIdProvider, ShareLinkBuilder
 :core:navigation    # shared deeplink scheme/host constants (pure Kotlin)
 :core:observability # LogcatCrashReporter + BreadcrumbInterceptor -> :core:common, :core:domain
@@ -85,7 +85,7 @@ The `:core:*` layers and every `:feature:*` are Gradle modules behind convention
     └── SocialAppApplication.kt
 ```
 
-`SocialAppApi` lives in `:feature:itemlist`, not in `:core:network`. Core provides infrastructure (the Retrofit instance, the OkHttp client); features own their API interfaces. The repository contracts sit in `:core:domain`, so itemdetail reaches item data through the interface, not through `:feature:itemlist`. No feature imports another; a build-logic rule (`socialapp.module.rules`) fails configuration if one does, or if a core module depends on a feature.
+`SocialAppApi` lives in `:feature:itemlist`, not in `:core:network`. Core provides infrastructure (the Retrofit instance, the single OkHttp client that also backs Coil's image loader); features own their API interfaces. The repository contracts sit in `:core:domain`, so itemdetail reaches item data through the interface, not through `:feature:itemlist`. No feature imports another; a build-logic rule (`socialapp.module.rules`) fails configuration if one does, or if a core module depends on a feature.
 
 **Navigation contract.** Each screen-bearing feature exposes a type-safe `@Serializable` route, a `NavController.navigateToX()` helper, and a `NavGraphBuilder.xScreen(...)` extension that registers its composable and deeplinks. `:app`'s `NavHost` calls those extensions and wires the lambdas; it imports no screen composable and owns no route strings. Deeplinks stay as explicit URI patterns (built from the `:core:navigation` scheme/host constants) so they match the manifest intent filters exactly, while `toRoute()` rebuilds the route from the parsed arguments.
 
