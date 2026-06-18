@@ -78,7 +78,9 @@ class ItemListViewModel(
             combine(
                 loadedItems,
                 favoriteRepository.observeFavoriteIds(),
-                _searchQuery.debounce(300),
+                // Debounce only typed input; the initial empty query and clears pass through at
+                // once so the list renders immediately instead of flashing Loading for 300ms.
+                _searchQuery.debounce { query -> if (query.isEmpty()) 0L else 300L },
                 _activeFilter,
             ) { items, favoriteIds, query, filter ->
                 ItemsCombined(items, favoriteIds, query, filter)
