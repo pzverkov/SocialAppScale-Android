@@ -26,4 +26,9 @@ dependencies {
     implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.kotlinx.serialization.json)
+
+    // Coil ImageLoader is built here so it can share the module's OkHttpClient. coil-core has no
+    // Compose dependency; the AsyncImage composable lives in :core:ui via coil-compose.
+    implementation(libs.coil.core)
+    implementation(libs.coil.network.okhttp)
 }
