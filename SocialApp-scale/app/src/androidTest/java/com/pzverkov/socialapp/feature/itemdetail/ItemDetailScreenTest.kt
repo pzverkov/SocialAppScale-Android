@@ -6,13 +6,19 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.pzverkov.socialapp.MainActivity
+import com.pzverkov.socialapp.ResetAppStateRule
+import com.pzverkov.socialapp.awaitText
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 class ItemDetailScreenTest {
 
-    @get:Rule
+    // Reset shared singleton/Room state before the activity launches (outer rule runs first).
+    @get:Rule(order = 0)
+    val resetRule = ResetAppStateRule()
+
+    @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Before
@@ -21,9 +27,9 @@ class ItemDetailScreenTest {
     }
 
     private fun navigateToDetail() {
-        composeRule.waitForIdle()
+        composeRule.awaitText("Vintage Camera")
         composeRule.onNodeWithText("Vintage Camera").performClick()
-        composeRule.waitForIdle()
+        composeRule.awaitText("Buy Now")
     }
 
     @Test
@@ -48,7 +54,7 @@ class ItemDetailScreenTest {
     @Test
     fun detailScreen_buyButton_showsSnackbar() {
         composeRule.onNodeWithText("Buy Now").performClick()
-        composeRule.waitForIdle()
+        composeRule.awaitText("Purchase flow for Vintage Camera coming soon!")
         composeRule.onNodeWithText("Purchase flow for Vintage Camera coming soon!").assertIsDisplayed()
     }
 
@@ -62,7 +68,7 @@ class ItemDetailScreenTest {
     @Test
     fun detailScreen_backButton_returnsToList() {
         composeRule.onNodeWithContentDescription("Back").performClick()
-        composeRule.waitForIdle()
+        composeRule.awaitText("Vintage Camera")
         composeRule.onNodeWithText("Vintage Camera").assertIsDisplayed()
     }
 }
