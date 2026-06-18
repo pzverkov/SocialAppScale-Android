@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.pzverkov.socialapp.MainActivity
 import com.pzverkov.socialapp.ResetAppStateRule
 import com.pzverkov.socialapp.awaitText
@@ -42,8 +43,9 @@ class ItemDetailScreenTest {
 
     @Test
     fun detailScreen_showsSellerInfo() {
-        composeRule.onNodeWithText("SocialUser1").assertIsDisplayed()
-        composeRule.onNodeWithText("View profile").assertIsDisplayed()
+        // Seller card sits below the fold on smaller screens; scroll it into view first.
+        composeRule.onNodeWithText("SocialUser1").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("View profile").performScrollTo().assertIsDisplayed()
     }
 
     @Test
