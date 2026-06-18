@@ -21,8 +21,8 @@ SocialApp-scale/
     model/         (:core:model)    # Item, ErrorType - pure Kotlin
     domain/        (:core:domain)   # repository + CrashReporter contracts, NetworkResult - pure Kotlin
     common/        (:core:common)   # Store + StoreInterceptor, PriceFormatter - pure Kotlin
-    network/       (:core:network)  # Retrofit/OkHttp setup, per-build-type BASE_URL
-    ui/            (:core:ui)       # design system: theme, components, image loading
+    network/       (:core:network)  # Retrofit/OkHttp setup, Coil ImageLoader, per-build-type BASE_URL
+    ui/            (:core:ui)       # design system: theme, components, AsyncImage rendering
     sharing/       (:core:sharing)  # ShareLinkBuilder, InstallationIdProvider
     navigation/    (:core:navigation)     # shared deeplink scheme/host constants - pure Kotlin
     observability/ (:core:observability)  # CrashReporter impl + Store breadcrumb interceptor
