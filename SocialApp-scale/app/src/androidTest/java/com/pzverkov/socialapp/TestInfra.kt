@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.test.runner.AndroidJUnitRunner
 import com.pzverkov.socialapp.core.di.AppGraphContract
+import com.pzverkov.socialapp.core.domain.FavoriteRepository
 import com.pzverkov.socialapp.core.domain.ItemRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.DependencyGraph
@@ -21,6 +22,9 @@ import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 interface TestAppGraph : AppGraphContract, ViewModelGraph {
 
     val itemRepository: ItemRepository
+
+    /** Exposed so tests can reset the persisted favorites (real Room store) between cases. */
+    val favoriteRepository: FavoriteRepository
 
     @DependencyGraph.Factory
     fun interface Factory {

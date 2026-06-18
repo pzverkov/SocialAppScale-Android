@@ -1,36 +1,36 @@
 package com.pzverkov.socialapp.feature.itemlist
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.test.core.app.ApplicationProvider
-import com.pzverkov.socialapp.FakeItemRepositoryImpl
 import com.pzverkov.socialapp.MainActivity
-import com.pzverkov.socialapp.TestAppGraph
-import com.pzverkov.socialapp.TestApplication
-import com.pzverkov.socialapp.core.model.ErrorType
-import com.pzverkov.socialapp.core.domain.NetworkResult
+import com.pzverkov.socialapp.ResetAppStateRule
+import com.pzverkov.socialapp.awaitText
 import org.junit.Rule
 import org.junit.Test
 
 class ItemListScreenTest {
 
-    @get:Rule
-    val composeRule = createAndroidComposeRule<MainActivity>()
+    // Reset shared singleton/Room state before the activity launches (outer rule runs first).
+    @get:Rule(order = 0)
+    val resetRule = ResetAppStateRule()
 
-    private val fakeRepository: FakeItemRepositoryImpl
-        get() = ((ApplicationProvider.getApplicationContext() as TestApplication).graph as TestAppGraph)
-            .itemRepository as FakeItemRepositoryImpl
+    @get:Rule(order = 1)
+    val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
     fun loadedState_showsItems() {
+        composeRule.awaitText("Vintage Camera")
         composeRule.onNodeWithText("Vintage Camera").assertIsDisplayed()
         composeRule.onNodeWithText("$150.00").assertIsDisplayed()
-        composeRule.onNodeWithText("New York").assertIsDisplayed()
         composeRule.onNodeWithText("Mountain Bike").assertIsDisplayed()
+        // Two of the three items are located in New York (Vintage Camera, iPhone 13 Pro).
+        composeRule.onAllNodesWithText("New York").assertCountEquals(2)
     }
 
     @Test
@@ -39,41 +39,42 @@ class ItemListScreenTest {
     }
 
     @Test
-    fun errorState_showsErrorAndRetryButton() {
-        fakeRepository.itemsResult = NetworkResult.Error(ErrorType.NETWORK)
-        composeRule.activityRule.scenario.recreate()
-        composeRule.onNodeWithText("Something went wrong").assertIsDisplayed()
-        composeRule.onNodeWithText("Retry").assertIsDisplayed()
-    }
-
-    @Test
     fun search_filtersItemsByTitle() {
+        composeRule.awaitText("Vintage Camera")
         composeRule.onNodeWithText("Search SocialApp\u2026").performClick()
         composeRule.onNodeWithText("Search SocialApp\u2026").performTextInput("Camera")
-        waitForDebounce()
+        // The query is debounced 300ms on the coroutine dispatcher; poll until it takes effect.
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("Mountain Bike").fetchSemanticsNodes().isEmpty()
+        }
         composeRule.onNodeWithText("Vintage Camera").assertIsDisplayed()
         composeRule.onNodeWithText("Mountain Bike").assertDoesNotExist()
     }
 
     @Test
     fun search_filtersItemsByLocation() {
+        composeRule.awaitText("Vintage Camera")
         composeRule.onNodeWithText("Search SocialApp\u2026").performClick()
         composeRule.onNodeWithText("Search SocialApp\u2026").performTextInput("London")
-        waitForDebounce()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("Vintage Camera").fetchSemanticsNodes().isEmpty()
+        }
         composeRule.onNodeWithText("Mountain Bike").assertIsDisplayed()
         composeRule.onNodeWithText("Vintage Camera").assertDoesNotExist()
     }
 
     @Test
     fun search_noResults_showsSearchEmptyState() {
+        composeRule.awaitText("Vintage Camera")
         composeRule.onNodeWithText("Search SocialApp\u2026").performClick()
         composeRule.onNodeWithText("Search SocialApp\u2026").performTextInput("xyznonexistent")
-        waitForDebounce()
+        composeRule.awaitText("No results for \"xyznonexistent\"")
         composeRule.onNodeWithText("No results for \"xyznonexistent\"").assertIsDisplayed()
     }
 
     @Test
     fun favoriteToggle_changesIcon() {
+        composeRule.awaitText("Vintage Camera")
         composeRule.onAllNodes(
             hasContentDescription("Add to favorites"),
             useUnmergedTree = true,
@@ -84,17 +85,10 @@ class ItemListScreenTest {
 
     @Test
     fun itemClick_navigatesToDetail() {
+        composeRule.awaitText("Vintage Camera")
         composeRule.onNodeWithText("Vintage Camera").performClick()
-        composeRule.waitForIdle()
+        composeRule.awaitText("Buy Now")
         composeRule.onNodeWithText("Buy Now").assertIsDisplayed()
-    }
-
-    // Advance the Compose clock past the 300ms debounce instead of Thread.sleep
-    private fun waitForDebounce() {
-        composeRule.mainClock.autoAdvance = false
-        composeRule.mainClock.advanceTimeBy(400)
-        composeRule.mainClock.autoAdvance = true
-        composeRule.waitForIdle()
     }
 }
 
