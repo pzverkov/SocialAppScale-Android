@@ -12,6 +12,14 @@ A two-screen Android marketplace app, kept as two variants in one repository.
 
 Both variants build from the same baseline today. `SocialApp-scale` is the track for production hardening and the `:core:*` / `:feature:*` module split; `SocialApp-basic` stays the lean reference. Each variant carries its own `README.md` and `ARCHITECTURE.md` with the full detail.
 
+## Architecture
+
+Both variants side by side: `SocialApp-basic`'s single-module package layers against `SocialApp-scale`'s Gradle module split.
+
+![Architecture diagram comparing the basic and scale variants](docs/architecture-diagram.svg)
+
+Source: [`docs/architecture-diagram.drawio`](docs/architecture-diagram.drawio), editable in [draw.io](https://app.diagrams.net/).
+
 ## Build
 
 Each variant is a standalone Gradle build. Pick one and run its wrapper:

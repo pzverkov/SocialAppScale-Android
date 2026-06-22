@@ -1,0 +1,111 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="arch" name="SocialApp Architecture">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" math="0" shadow="0" pageWidth="1400" pageHeight="900">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ============ BASIC PANEL ============ -->
+        <mxCell id="bpanel" value="" style="rounded=1;fillColor=#fbfbfb;strokeColor=#bbbbbb;dashed=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="440" height="560" as="geometry"/>
+        </mxCell>
+        <mxCell id="btitle" value="SocialApp-basic&#10;single :app module, package layers - Hilt DI" style="text;fontSize=15;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="50" width="400" height="44" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="b_ui" value="Compose UI - Single Activity&#10;Screens: itemlist, itemdetail (Navigation Compose)" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="70" y="110" width="380" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_vm" value="ViewModel + Store&lt;State, Event&gt;&#10;StateFlow down / SharedFlow one-shot events" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="70" y="196" width="380" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_dom" value="Repository interfaces (domain)&#10;ItemRepository, FavoriteRepository - typed ErrorType" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="70" y="282" width="380" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_data" value="Repository impl (data)&#10;ItemRepositoryImpl + in-memory cache" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="70" y="368" width="380" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_net" value="Retrofit + OkHttp&#10;SocialAppApi (mock server)" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="70" y="448" width="180" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_room" value="Room&#10;Favorites DAO" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="270" y="448" width="180" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_infra" value="Hilt DI  -  Coil image loading  -  kotlinx.serialization" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="70" y="524" width="380" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="be1" style="endArrow=classic;html=1;" edge="1" parent="1" source="b_ui" target="b_vm"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="be2" style="endArrow=classic;html=1;" edge="1" parent="1" source="b_vm" target="b_dom"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="be3" style="endArrow=classic;html=1;" edge="1" parent="1" source="b_dom" target="b_data"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="be4" style="endArrow=classic;html=1;" edge="1" parent="1" source="b_data" target="b_net"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="be5" style="endArrow=classic;html=1;" edge="1" parent="1" source="b_data" target="b_room"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ============ SCALE PANEL ============ -->
+        <mxCell id="spanel" value="" style="rounded=1;fillColor=#fbfbfb;strokeColor=#bbbbbb;dashed=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="540" y="40" width="800" height="560" as="geometry"/>
+        </mxCell>
+        <mxCell id="stitle" value="SocialApp-scale&#10;Gradle modules + convention plugins - Metro DI" style="text;fontSize=15;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="560" y="50" width="760" height="44" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="s_app" value=":app  -  thin composition root&#10;Metro AppGraph, NavHost, MainActivity, Application" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="106" width="360" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="s_fl" value=":feature:itemlist&#10;Api, RepoImpl, DTO, list UI" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="560" y="186" width="230" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_fd" value=":feature:itemdetail&#10;detail UI, assisted VM" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="810" y="186" width="230" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_ff" value=":feature:favorite&#10;Room data only, no UI" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="186" width="240" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="score_hdr" value="core modules (behind convention plugins)" style="text;fontSize=11;fontStyle=2;align=left;" vertex="1" parent="1">
+          <mxGeometry x="560" y="248" width="400" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="c_model" value=":core:model" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1"><mxGeometry x="560" y="270" width="142" height="40" as="geometry"/></mxCell>
+        <mxCell id="c_domain" value=":core:domain" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1"><mxGeometry x="708" y="270" width="142" height="40" as="geometry"/></mxCell>
+        <mxCell id="c_common" value=":core:common&#10;Store + interceptors" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1"><mxGeometry x="856" y="270" width="142" height="40" as="geometry"/></mxCell>
+        <mxCell id="c_net" value=":core:network" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1004" y="270" width="142" height="40" as="geometry"/></mxCell>
+        <mxCell id="c_ui" value=":core:ui" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1152" y="270" width="142" height="40" as="geometry"/></mxCell>
+
+        <mxCell id="c_share" value=":core:sharing" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1"><mxGeometry x="560" y="316" width="142" height="40" as="geometry"/></mxCell>
+        <mxCell id="c_nav" value=":core:navigation" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1"><mxGeometry x="708" y="316" width="142" height="40" as="geometry"/></mxCell>
+        <mxCell id="c_obs" value=":core:observability&#10;CrashReporter + Breadcrumb" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1"><mxGeometry x="856" y="316" width="142" height="40" as="geometry"/></mxCell>
+        <mxCell id="c_ai" value=":core:ai&#10;Gemini Nano + ML Kit" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1004" y="316" width="142" height="40" as="geometry"/></mxCell>
+        <mxCell id="c_test" value=":core:testing&#10;shared fakes" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1152" y="316" width="142" height="40" as="geometry"/></mxCell>
+
+        <mxCell id="s_net" value="Retrofit + OkHttp + Coil&#10;(one client backs API + images)" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="560" y="392" width="290" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_room" value="Room&#10;Favorites DAO" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="870" y="392" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="s_build" value="build-logic - convention plugins + module-boundary rules (no feature imports feature)" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="560" y="462" width="486" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_extra" value="Tooling modules: :baselineprofile  -  :screenshot:itemdetail (Roborazzi)" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="560" y="512" width="486" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="se1" style="endArrow=classic;html=1;" edge="1" parent="1" source="s_app" target="s_fl"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="se2" style="endArrow=classic;html=1;" edge="1" parent="1" source="s_app" target="s_fd"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="se3" style="endArrow=classic;html=1;" edge="1" parent="1" source="s_app" target="s_ff"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="se4" style="endArrow=classic;html=1;dashed=1;" edge="1" parent="1" source="s_fl" target="c_domain"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="se5" style="endArrow=classic;html=1;dashed=1;" edge="1" parent="1" source="s_fd" target="c_domain"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="se6" style="endArrow=classic;html=1;dashed=1;" edge="1" parent="1" source="s_ff" target="c_domain"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="se7" style="endArrow=classic;html=1;" edge="1" parent="1" source="c_net" target="s_net"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="se8" style="endArrow=classic;html=1;" edge="1" parent="1" source="s_ff" target="s_room"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- legend -->
+        <mxCell id="leg" value="UI (Compose)  |  domain/logic  |  data/network  |  infra/DI  |  on-device AI  |  composition root" style="text;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="620" width="1300" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
