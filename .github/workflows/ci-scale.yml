@@ -1,29 +1,47 @@
 name: SocialApp-scale
 
-# Runs only when the scale project, the shared catalog, or these workflows change,
-# so docs-only and basic-only changes skip the scale build entirely.
+# Always runs so the `gate` check reports on every pull request (a required check from a
+# path-filtered workflow would hang forever on unrelated changes). The `changes` job decides
+# whether the scale build is needed; docs-only and other-variant changes skip it and `gate` still passes.
 on:
   push:
     branches: [main]
-    paths:
-      - 'SocialApp-scale/**'
-      - 'gradle/**'
-      - '.github/workflows/ci-scale.yml'
-      - '.github/workflows/verify.yml'
   pull_request:
     branches: [main]
-    paths:
-      - 'SocialApp-scale/**'
-      - 'gradle/**'
-      - '.github/workflows/ci-scale.yml'
-      - '.github/workflows/verify.yml'
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.diff.outputs.build }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BASE" HEAD | grep -qE '^(SocialApp-scale/|gradle/|\.github/workflows/(ci-scale|verify)\.yml)'; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          fi
+
   verify:
+    needs: changes
+    if: needs.changes.outputs.build == 'true'
     uses: ./.github/workflows/verify.yml
     with:
       project: SocialApp-scale
@@ -34,18 +52,20 @@ jobs:
   # AI path stays covered by unit tests with a fake; here it simply reports unavailable.
   instrumentation:
     name: instrumentation tests (emulator)
+    needs: changes
+    if: needs.changes.outputs.build == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       - name: Enable KVM
         run: |
@@ -54,7 +74,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Cache AVD
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ~/.android/avd/*
@@ -62,7 +82,7 @@ jobs:
           key: avd-30-${{ runner.os }}
 
       - name: Run instrumentation tests
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 30
           arch: x86_64
@@ -72,9 +92,21 @@ jobs:
 
       - name: Upload instrumentation reports on failure
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: instrumentation-reports
           path: SocialApp-scale/app/build/reports/androidTests/
           retention-days: 7
           if-no-files-found: ignore
+
+  # The single required status check for this variant. Skipped means "no relevant change" and
+  # passes; failed or cancelled means the build broke. The emulator job is intentionally not
+  # part of the gate, because a flaky required check trains people to bypass it.
+  gate:
+    name: gate-scale
+    needs: [changes, verify]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          [ "${{ contains(needs.*.result, 'failure') }}" = "false" ] && [ "${{ contains(needs.*.result, 'cancelled') }}" = "false" ]
