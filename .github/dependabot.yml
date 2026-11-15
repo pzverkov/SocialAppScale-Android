@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: gradle
+    directory: /SocialApp-scale
+    schedule:
+      interval: weekly
+    groups:
+      gradle:
+        patterns: ['*']
+  - package-ecosystem: gradle
+    directory: /SocialApp-basic
+    schedule:
+      interval: weekly
+    groups:
+      gradle:
+        patterns: ['*']

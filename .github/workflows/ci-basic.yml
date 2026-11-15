@@ -1,29 +1,58 @@
 name: SocialApp-basic
 
-# Runs only when the basic project, the shared catalog, or these workflows change,
-# so docs-only and scale-only changes skip the basic build entirely.
+# Always runs so the `gate` check reports on every pull request (a required check from a
+# path-filtered workflow would hang forever on unrelated changes). The `changes` job decides
+# whether the basic build is needed; docs-only and other-variant changes skip it and `gate` still passes.
 on:
   push:
     branches: [main]
-    paths:
-      - 'SocialApp-basic/**'
-      - 'gradle/**'
-      - '.github/workflows/ci-basic.yml'
-      - '.github/workflows/verify.yml'
   pull_request:
     branches: [main]
-    paths:
-      - 'SocialApp-basic/**'
-      - 'gradle/**'
-      - '.github/workflows/ci-basic.yml'
-      - '.github/workflows/verify.yml'
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.diff.outputs.build }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BASE" HEAD | grep -qE '^(SocialApp-basic/|gradle/|\.github/workflows/(ci-basic|verify)\.yml)'; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          fi
+
   verify:
+    needs: changes
+    if: needs.changes.outputs.build == 'true'
     uses: ./.github/workflows/verify.yml
     with:
       project: SocialApp-basic
+
+  # The single required status check for this variant. Skipped means "no relevant change" and
+  # passes; failed or cancelled means the build broke.
+  gate:
+    name: gate-basic
+    needs: [changes, verify]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          [ "${{ contains(needs.*.result, 'failure') }}" = "false" ] && [ "${{ contains(needs.*.result, 'cancelled') }}" = "false" ]
