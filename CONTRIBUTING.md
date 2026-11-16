@@ -40,6 +40,16 @@ GitHub Actions runs the same gates (`lintDebug`, `testDebugUnitTest`, `koverVeri
 
 Plugin and library versions live in the shared catalog at `gradle/libs.versions.toml` and apply to both variants. Bump them there, then confirm both variants still build and pass the gates.
 
+## Dependency checksums
+
+Each variant pins the SHA-256 of every dependency in `gradle/verification-metadata.xml`, and Gradle fails the build when a download does not match. After any dependency or plugin bump, regenerate the file and commit it with the bump:
+
+```
+scripts/update-verification-metadata.sh SocialApp-scale    # or SocialApp-basic
+```
+
+Review the diff: only the bumped components should change. A Dependabot PR that fails with "Dependency verification failed" needs this step before it can merge.
+
 ## Conventions
 
 Each variant's `ARCHITECTURE.md` documents the design rules and the feature-onboarding playbook: state as a sealed interface, repository interfaces in `domain` and implementations in `data`, fakes over mocks, UI models separate from domain models. Match them.
