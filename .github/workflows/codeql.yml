@@ -48,7 +48,8 @@ jobs:
 
       - name: Build
         working-directory: SocialApp-scale
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+        # CodeQL traces the compiler, so cached or up-to-date tasks would hide all source from it.
+        run: ./gradlew :app:assembleDebug --no-daemon --no-build-cache --rerun-tasks --stacktrace
 
       - name: Analyze
         uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
