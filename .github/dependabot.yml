@@ -1,3 +1,6 @@
+# Gradle updates are grouped by version family, not as one batch. Each family moves in lockstep
+# (compileSdk with AGP and AndroidX, Metro with Kotlin and KSP, Hilt with its compiler), so a
+# red family must not block the others from landing.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -12,12 +15,28 @@ updates:
     schedule:
       interval: weekly
     groups:
-      gradle:
+      androidx:
+        patterns: ['androidx.*']
+      di:
+        patterns: ['dev.zacsweers.metro*', 'com.google.dagger*']
+      kotlin:
+        patterns: ['org.jetbrains.kotlin*', 'org.jetbrains.kotlinx*', 'com.google.devtools.ksp*']
+      android-gradle-plugin:
+        patterns: ['com.android*']
+      other:
         patterns: ['*']
   - package-ecosystem: gradle
     directory: /SocialApp-basic
     schedule:
       interval: weekly
     groups:
-      gradle:
+      androidx:
+        patterns: ['androidx.*']
+      di:
+        patterns: ['dev.zacsweers.metro*', 'com.google.dagger*']
+      kotlin:
+        patterns: ['org.jetbrains.kotlin*', 'org.jetbrains.kotlinx*', 'com.google.devtools.ksp*']
+      android-gradle-plugin:
+        patterns: ['com.android*']
+      other:
         patterns: ['*']
